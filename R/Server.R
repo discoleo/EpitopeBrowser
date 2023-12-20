@@ -90,8 +90,23 @@ server.app = function(input, output, session) {
 		x = merge(x, freq.hla(), by = "Peptide");
 		x$Total = round(x$A + x$B + x$C, 5);
 		x$Ti = round(x$Total - (x$A + x$B)*x$C + x$A*x$B*(x$C - 1), 5);
+		values$pp = x;
 		#
 		DT::datatable(x, filter = 'top',
 			options = option.regex(options$reg.PP));
+	})
+	
+	# Selected Rows:
+	observeEvent(input$ppHLA, {
+		ids = input$tblPeptides_rows_selected;
+		print(ids);
+		if(is.null(values$pp)) return();
+		pp = values$pp[ids, "Peptide"];
+		x  = values$fData[c("HLA", "Peptide")]
+		x  = x[x$Peptide %in% pp, ];
+		output$tblAllelesPP = DT::renderDT(
+			DT::datatable(x, filter = 'top',
+				options = option.regex(options$reg.PP))
+		);
 	})
 }

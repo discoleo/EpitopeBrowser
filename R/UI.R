@@ -13,6 +13,8 @@ init.theme = function() {
 ### Shiny functions
 # Layout:
 sidebarLayout = function(...) shiny::sidebarLayout(...);
+fluidRow = function(...) shiny::fluidRow(...);
+column = function(...) shiny::column(...);
 # Panels:
 tabPanel = function(...) shiny::tabPanel(...);
 mainPanel = function(...) shiny::mainPanel(...);
@@ -58,7 +60,11 @@ getUI = function() {
 			mainPanel(DT::DTOutput("tblAlleles"))
 		),
 		tabPanel("Epitopes", # icon = icon("Epitopes"),
-			mainPanel(DT::DTOutput("tblPeptides"))
+			fluidRow(
+			column(9, DT::DTOutput("tblPeptides")),
+			column(3, DT::DTOutput("tblAllelesPP"))
+			),
+			actionButton("ppHLA", "Print HLA")
 		)
 	)
 	))
