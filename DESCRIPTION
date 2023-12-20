@@ -1,0 +1,16 @@
+Package: EpitopeBrowser
+Title: Interactive Shiny App to Browse Peptide Epitopes
+Version: 0.1.0
+Authors@R:
+    person("Leonard", "Mada", "leo.mada@syonic.eu", role = c("aut", "cre"))
+Depends: shiny, DT
+Description: Shiny web app to browse through a list of peptide epitopes.
+License: `use_gpl3_license()`
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+URL: https://github.com/discoleo/EpitopeBrowser
+BugReports: https://github.com/discoleo/EpitopeBrowser/issues
