@@ -42,8 +42,10 @@ server.app = function(input, output, session) {
 		return(x);
 	}
 	#
-	option.regex = function(x, caseInsens = TRUE) {
-		list(search = list(regex = x, caseInsensitive = caseInsens));
+	option.regex = function(x, caseInsens = TRUE, varia = NULL) {
+		opt = list(search = list(regex = x, caseInsensitive = caseInsens));
+		if( ! is.null(varia)) opt = c(opt, varia);
+		return(opt);
 	}
     # File Input
     observe({
@@ -106,7 +108,7 @@ server.app = function(input, output, session) {
 		x  = x[x$Peptide %in% pp, ];
 		output$tblAllelesPP = DT::renderDT(
 			DT::datatable(x, filter = 'top',
-				options = option.regex(options$reg.PP))
+				options = option.regex(options$reg.PP, varia = list(dom = "lrtip")))
 		);
 	})
 }
