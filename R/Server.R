@@ -95,20 +95,26 @@ server.app = function(input, output, session) {
 		values$pp = x;
 		#
 		DT::datatable(x, filter = 'top',
-			options = option.regex(options$reg.PP));
+			options = option.regex(options$reg.PP,
+				# nCol = 8: Ti;
+				varia = list(order = list(8, "desc"))));
 	})
 	
 	# Selected Rows:
 	observeEvent(input$ppHLA, {
 		ids = input$tblPeptides_rows_selected;
 		print(ids);
-		if(is.null(values$pp)) return();
+		if(is.null(values$pp) || length(ids) == 0) {
+			output$tblAllelesPP = NULL;
+			return();
+		}
 		pp = values$pp[ids, "Peptide"];
 		x  = values$fData[c("HLA", "Peptide")]
 		x  = x[x$Peptide %in% pp, ];
 		output$tblAllelesPP = DT::renderDT(
 			DT::datatable(x, filter = 'top',
-				options = option.regex(options$reg.PP, varia = list(dom = "lrtip")))
+				options = option.regex(options$reg.PP,
+					varia = list(dom = "lrtip", order = list(1, "asc"))))
 		);
 	})
 }
