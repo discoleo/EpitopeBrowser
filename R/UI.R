@@ -46,7 +46,7 @@ getUI = function() {
 					titlePanel("Load file"),
 					fileInput.csv("file", "Select CSV file"),
 					sliderInput(inputId = "rank", label = "Rank",
-						value = 0.2, min = 0, max = 1, step = 0.025),
+						value = 0.2, min = 0, max = 2, step = 0.025),
 					selectInput("fltAllele",
 						label = "Filter alleles:",
 						choices = list("All" = "all", "Common" = "common",
@@ -64,7 +64,8 @@ getUI = function() {
 			column(9, DT::DTOutput("tblPeptides")),
 			column(3, DT::DTOutput("tblAllelesPP"))
 			),
-			actionButton("ppHLA", "Print HLA")
+			column(4, actionButton("ppHLA", "Display HLA")),
+			column(8, DT::DTOutput("tblTotalPopulation"))
 		)
 	)
 	))

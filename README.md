@@ -11,6 +11,10 @@ The main purpose of this package is to facilitate the exploration of HLA epitope
 **Note:**\
 The epitopes can be generated using https://iedb.org and exported as a csv-file - see the csv file in the folder /inst/examples. The application currently handles only HLA-I epitopes.
 
+### Examples
+
+Selecting the first 2 peptides on the **Epitopes** page ("EYHDVRVVL" and "FLEYHDVRV") and clicking the button **Display HLA** will display the HLA alleles for the 2 peptides and also compute the total population coverage (approx 71%).
+
 
 ## Authors
 

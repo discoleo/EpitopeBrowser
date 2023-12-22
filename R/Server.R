@@ -106,6 +106,7 @@ server.app = function(input, output, session) {
 		print(ids);
 		if(is.null(values$pp) || length(ids) == 0) {
 			output$tblAllelesPP = NULL;
+			output$tblTotalPopulation = NULL;
 			return();
 		}
 		pp = values$pp[ids, "Peptide"];
@@ -115,6 +116,16 @@ server.app = function(input, output, session) {
 			DT::datatable(x, filter = 'top',
 				options = option.regex(options$reg.PP,
 					varia = list(dom = "lrtip", order = list(1, "asc"))))
+		);
+		# Total Population:
+		hla = unique(x$HLA);
+		xT = freq.populationTotal(hla, options$HLA);
+		Total = xT$A + xT$B + xT$C;
+		xT$Ti = round(Total - (xT$A + xT$B)*xT$C - xT$A*xT$B + xT$A*xT$B*xT$C, 3);
+		output$tblTotalPopulation = DT::renderDT(
+			DT::datatable(xT, rownames = FALSE,
+				options = option.regex(options$reg.PP,
+					varia = list(dom = "t")))
 		);
 	})
 }
