@@ -7,6 +7,7 @@ check.hla.df = function(x) {
 }
 
 freq.population = function(x, f) {
+	if(nrow(x) == 0) warning("No data!");
 	x  = merge(x[c("HLA", "Peptide")], f, by = "HLA", all.x = TRUE);
 	isMissing = is.na(x$Freq);
 	x$Type[isMissing] = substr(x$HLA[isMissing], 1, 1);
@@ -15,6 +16,7 @@ freq.population = function(x, f) {
 	pp = rownames(tf);
 	tf = data.frame(tf);
 	tf$Peptide = pp;
+	tf = check.hla.df(tf);
 	#
 	asZ = function(x) {
 		isNA = is.na(x);

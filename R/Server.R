@@ -6,7 +6,12 @@ getServer = function(x) {
 
 server.app = function(input, output, session) {
 	# Dynamic variable
-    values = reactiveValues();
+	values = reactiveValues(
+		Active    = "Not",  # Active Tab
+		fullData  = NULL,   # initial Data
+		fltGlData = NULL,   # Globally filtered Data
+		fltData   = NULL    # Data filtered in Table
+	);
 	
 	options = list(
 		hla.strip = TRUE, # HLA-A... => A...;
@@ -16,8 +21,24 @@ server.app = function(input, output, session) {
 		reg.PP   = TRUE   # Regex for Epitopes-Table
 	);
 	
+	hasData = function() { ! is.null(values$fltGlData); }
+	reset.tab = function() {
+		if(values$Active != "Data" && hasData()) {
+			values$Active  = "Data";
+			values$fltData = values$fltGlData;
+		}
+	}
+	
+	observeEvent(input$menu.top, {
+		if(values$Active == "Data") {
+			print("Switched");
+			filter.byTable();
+			values$Active = "Other";
+		}
+	})
+	
 	freq.hla = function() {
-		x = values$fData[c("Peptide", "HLA")];
+		x = values$fltData[c("Peptide", "HLA")];
 		# isDuplic = duplicated(x);
 		# x = x[ ! isDuplic, ];
 		freq.population(x, options$HLA);
@@ -41,51 +62,65 @@ server.app = function(input, output, session) {
 		x = x[isHLA, ];
 		return(x);
 	}
+	filter.byTable = function() {
+		id = input$tblData_rows_all;
+		values$fltData = values$fltGlData[id, ];
+	}
 	#
 	option.regex = function(x, caseInsens = TRUE, varia = NULL) {
 		opt = list(search = list(regex = x, caseInsensitive = caseInsens));
 		if( ! is.null(varia)) opt = c(opt, varia);
 		return(opt);
 	}
-    # File Input
-    observe({
-        file1 <- input$file;
-        if (is.null(file1)) 
-            return(NULL);
-        
+	# File Input
+	observe({
+		file1 <- input$file;
+		if (is.null(file1)) 
+			return(NULL);
+		
 		x = read.csv(file1$datapath, header = TRUE, sep = options$sep);
 		names(x)[c(1,2,6,8)] = c("HLA", "Seq", "Peptide", "Rank");
 		if(options$hla.strip) x$HLA = trim(x$HLA);
 		#
-        values$mydata = x;
-    })
+		values$fullData = x;
+	})
 	
 	### Options: Data
 	observe({
 		lim.rank = input$rank;
 		fltAllele = input$fltAllele;
-        x = values$mydata;
-		values$fData = filter.df(x, lim.rank, fltAllele);
-		print(nrow(values$fData))
+		x = values$fullData;
+		values$fltGlData = filter.df(x, lim.rank, fltAllele);
+		values$fltData = values$fltGlData;
+		print(nrow(values$fltGlData));
 	})
 	observe({
 		isReg = input$chkRegex;
 		options$reg.Data = isReg;
 	})
 	
+	# observeEvent(input$tblData_search_columns, {
+	#	filter.byTable();
+	# })
+	
 	### Tables
 	output$tblData <- DT::renderDT ({
-		DT::datatable(values$fData, filter = 'top',
+		reset.tab();
+		DT::datatable(values$fltGlData, filter = 'top',
 			options = option.regex(options$reg.Data));
 	})
 	output$tblAlleles <- DT::renderDT ({
-		x = values$fData$HLA;
+		# values$Active = "Alleles";
+		x = values$fltData$HLA;
 		x = data.frame(table(x));
 		names(x)[1] = "HLA";
 		DT::datatable(x, filter = 'top');
 	})
 	output$tblPeptides <- DT::renderDT ({
-		x = data.frame(table(values$fData$Peptide));
+		# values$Active = "PP";
+		output$tblAllelesPP = NULL; # Reset 2nd & 3rd Tables;
+		output$tblTotalPopulation = NULL;
+		x = data.frame(table(values$fltData$Peptide));
 		names(x)[1] = "Peptide";
 		x$Peptide = as.character(x$Peptide);
 		x$Len = nchar(x$Peptide);
@@ -110,7 +145,7 @@ server.app = function(input, output, session) {
 			return();
 		}
 		pp = values$pp[ids, "Peptide"];
-		x  = values$fData[c("HLA", "Peptide")]
+		x  = values$fltData[c("HLA", "Peptide")]
 		x  = x[x$Peptide %in% pp, ];
 		output$tblAllelesPP = DT::renderDT(
 			DT::datatable(x, filter = 'top',
