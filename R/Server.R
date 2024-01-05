@@ -164,4 +164,19 @@ server.app = function(input, output, session) {
 					varia = list(dom = "t")))
 		);
 	})
+	
+	### Save Data
+	output$downloadPP <- downloadHandler(
+		filename = function() {
+			paste("PP.Freq", ".csv", sep = "");
+		},
+		content = function(file) {
+			# TODO: check first if NULL;
+			# All rows: https://rstudio.github.io/DT/shiny.html
+			ids = input$tblPeptides_rows_all;
+			if(is.null(ids)) return(NULL);
+			x = values$pp[ids, ];
+			write.csv(x, file, row.names = FALSE);
+		}
+	)
 }

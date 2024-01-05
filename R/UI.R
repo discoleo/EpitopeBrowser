@@ -68,6 +68,9 @@ getUI = function() {
 			fluidRow(
 			column(9, DT::DTOutput("tblPeptides")),
 			column(3, DT::DTOutput("tblAllelesPP"))
+			),
+			fluidRow(
+				downloadButton("downloadPP", "Download")
 			)
 		)
 	)
