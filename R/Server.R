@@ -47,10 +47,17 @@ server.app = function(input, output, session) {
 	trim = function(x) {
 		sub("(?i)^HLA-", "", x);
 	}
-	filter.df = function(x, lim.rank, fltAllele) {
+	filter.df = function() {
+		lim.rank  = input$rank;
+		fltAllele = input$fltAllele;
+		x = values$fullData;
 		x = x[x$Rank <= lim.rank, ];
 		x = filter.HLA(x, fltAllele);
-		return(x);
+		#
+		values$fltGlData = x;
+		values$fltData   = x;
+		print(nrow(x));
+		output$tblData = DT::renderDT(dataTable());
 	}
 	filter.HLA = function(x, fltAllele) {
 		if(fltAllele == "all") return(x);
@@ -72,6 +79,7 @@ server.app = function(input, output, session) {
 		if( ! is.null(varia)) opt = c(opt, varia);
 		return(opt);
 	}
+	
 	# File Input
 	observe({
 		file1 <- input$file;
@@ -86,15 +94,17 @@ server.app = function(input, output, session) {
 	})
 	
 	### Options: Data
-	observe({
-		lim.rank = input$rank;
-		fltAllele = input$fltAllele;
-		x = values$fullData;
-		values$fltGlData = filter.df(x, lim.rank, fltAllele);
-		values$fltData = values$fltGlData;
-		print(nrow(values$fltGlData));
+	observeEvent(values$fullData, {
+		filter.df();
+	})
+	observeEvent(input$rank, {
+		filter.df();
+	})
+	observeEvent(input$fltAllele, {
+		filter.df();
 	})
 	observe({
+		# TODO
 		isReg = input$chkRegex;
 		options$reg.Data = isReg;
 	})
@@ -104,6 +114,11 @@ server.app = function(input, output, session) {
 	# })
 	
 	### Tables
+	dataTable = function() ({
+		reset.tab();
+		DT::datatable(values$fltGlData, filter = 'top',
+			options = option.regex(options$reg.Data));
+	})
 	output$tblData <- DT::renderDT ({
 		reset.tab();
 		DT::datatable(values$fltGlData, filter = 'top',
