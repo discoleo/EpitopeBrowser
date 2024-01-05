@@ -157,6 +157,7 @@ server.app = function(input, output, session) {
 		xT = freq.populationTotal(hla, options$HLA);
 		Total = xT$A + xT$B + xT$C;
 		xT$Ti = round(Total - (xT$A + xT$B)*xT$C - xT$A*xT$B + xT$A*xT$B*xT$C, 3);
+		xT = cbind("Total" = "Population", xT);
 		output$tblTotalPopulation = DT::renderDT(
 			DT::datatable(xT, rownames = FALSE,
 				options = option.regex(options$reg.PP,

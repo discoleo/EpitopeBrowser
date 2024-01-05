@@ -61,11 +61,14 @@ getUI = function() {
 		),
 		tabPanel("Epitopes", # icon = icon("Epitopes"),
 			fluidRow(
-			column(9, DT::DTOutput("tblPeptides")),
-			column(3, DT::DTOutput("tblAllelesPP"))
-			),
 			column(4, actionButton("ppHLA", "Display HLA")),
 			column(8, DT::DTOutput("tblTotalPopulation"))
+			),
+			fluidRow(br()),
+			fluidRow(
+			column(9, DT::DTOutput("tblPeptides")),
+			column(3, DT::DTOutput("tblAllelesPP"))
+			)
 		)
 	)
 	))
