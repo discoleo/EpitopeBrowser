@@ -5,14 +5,7 @@ getServer = function(x) {
 }
 
 server.app = function(input, output, session) {
-	# Dynamic variable
-	values = reactiveValues(
-		Active    = "Not",  # Active Tab
-		fullData  = NULL,   # initial Data
-		fltGlData = NULL,   # Globally filtered Data
-		fltData   = NULL    # Data filtered in Table
-	);
-	
+	# Global Options
 	options = list(
 		hla.strip = TRUE, # HLA-A... => A...;
 		sep = ",",       # csv Separator
@@ -21,6 +14,16 @@ server.app = function(input, output, session) {
 		reg.PP   = TRUE   # Regex for Epitopes-Table
 	);
 	
+	# Dynamic variable
+	values = reactiveValues(
+		Active    = "Not",  # Active Tab
+		fullData  = NULL,   # initial Data
+		fltGlData = NULL,   # Globally filtered Data
+		fltData   = NULL,   # Data filtered in Table
+		reg.Data  = options$reg.Data
+	);
+	
+	# Reset Filters on Data table
 	hasData = function() { ! is.null(values$fltGlData); }
 	reset.tab = function() {
 		if(values$Active != "Data" && hasData()) {
@@ -56,7 +59,7 @@ server.app = function(input, output, session) {
 		#
 		values$fltGlData = x;
 		values$fltData   = x;
-		print(nrow(x));
+		cat("Rows: ", nrow(x), "\n");
 		output$tblData = DT::renderDT(dataTable());
 	}
 	filter.HLA = function(x, fltAllele) {
@@ -74,7 +77,7 @@ server.app = function(input, output, session) {
 		values$fltData = values$fltGlData[id, ];
 	}
 	#
-	option.regex = function(x, caseInsens = TRUE, varia = NULL) {
+	option.regex = function(x, varia = NULL, caseInsens = TRUE) {
 		opt = list(search = list(regex = x, caseInsensitive = caseInsens));
 		if( ! is.null(varia)) opt = c(opt, varia);
 		return(opt);
@@ -82,7 +85,7 @@ server.app = function(input, output, session) {
 	
 	# File Input
 	observe({
-		file1 <- input$file;
+		file1 = input$file;
 		if (is.null(file1)) 
 			return(NULL);
 		
@@ -103,10 +106,13 @@ server.app = function(input, output, session) {
 	observeEvent(input$fltAllele, {
 		filter.df();
 	})
-	observe({
-		# TODO
+	observeEvent(input$chkRegex, {
 		isReg = input$chkRegex;
-		options$reg.Data = isReg;
+		values$reg.Data = isReg;
+		flt = input$tblData_search_columns;
+		flt = c("", flt); # Row ID
+		flt = lapply(flt, function(x) if(x == "") NULL else list(search = x));
+		output$tblData <- DT::renderDT(dataTable(varia = list(searchCols = flt)));
 	})
 	
 	# observeEvent(input$tblData_search_columns, {
@@ -114,16 +120,21 @@ server.app = function(input, output, session) {
 	# })
 	
 	### Tables
-	dataTable = function() ({
+	
+	# Data
+	dataTable = function(varia = NULL) ({
 		reset.tab();
 		DT::datatable(values$fltGlData, filter = 'top',
-			options = option.regex(options$reg.Data));
+			options = option.regex(values$reg.Data, varia=varia));
 	})
-	output$tblData <- DT::renderDT ({
-		reset.tab();
-		DT::datatable(values$fltGlData, filter = 'top',
-			options = option.regex(options$reg.Data));
-	})
+	# probably NOT needed
+	# output$tblData <- DT::renderDT ({
+	#	reset.tab();
+	#	DT::datatable(values$fltGlData, filter = 'top',
+	#		options = option.regex(values$reg.Data));
+	# })
+	
+	# HLA Alleles
 	output$tblAlleles <- DT::renderDT ({
 		# values$Active = "Alleles";
 		x = values$fltData$HLA;
@@ -131,6 +142,8 @@ server.app = function(input, output, session) {
 		names(x)[1] = "HLA";
 		DT::datatable(x, filter = 'top');
 	})
+	
+	# Epitopes
 	output$tblPeptides <- DT::renderDT ({
 		# values$Active = "PP";
 		output$tblAllelesPP = NULL; # Reset 2nd & 3rd Tables;
