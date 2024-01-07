@@ -70,7 +70,8 @@ getUI = function() {
 			column(3, DT::DTOutput("tblAllelesPP"))
 			),
 			fluidRow(
-				downloadButton("downloadPP", "Download")
+				downloadButton("downloadPP", "Download"),
+				actionButton("printPPSel", "Print Selection")
 			)
 		)
 	)

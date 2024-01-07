@@ -207,4 +207,18 @@ server.app = function(input, output, session) {
 			write.csv(x, file, row.names = FALSE);
 		}
 	)
+	
+	### Print Selection
+	observeEvent(input$printPPSel, {
+		# TODO: check first if NULL;
+		ids = input$tblPeptides_rows_selected;
+		if(is.null(ids) || length(ids) == 0) return(NULL);
+		x = values$pp$Peptide[ids];
+		print(x);
+		showModal(modalDialog(
+			title = "Selection",
+			paste0(x, collapse = ", "),
+			easyClose = TRUE, footer = NULL
+		));
+	})
 }
