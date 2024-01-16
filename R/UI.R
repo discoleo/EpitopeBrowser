@@ -73,7 +73,12 @@ getUI = function() {
 				downloadButton("downloadPP", "Download"),
 				actionButton("printPPSel", "Print Selection")
 			)
+		),
+		tabPanel("Protein", # icon = icon("Protein"),
+				plotOutput("imgProtein")
+		),
+		tabPanel("Help", # icon = icon("Help"),
+				uiOutput("txtHelp")
 		)
-	)
-	))
+	)))
 }
