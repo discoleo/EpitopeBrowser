@@ -26,6 +26,15 @@ server.app = function(input, output, session) {
 		reg.Data  = options$reg.Data
 	);
 	
+	### Menu Tabs
+	observeEvent(input$menu.top, {
+		if(values$Active == "Data") {
+			print("Switched");
+			filter.byTable();
+			values$Active = "Other";
+		}
+	})
+	
 	# Reset Filters on Data table
 	hasData = function() { ! is.null(values$fltGlData); }
 	reset.tab = function() {
@@ -35,18 +44,8 @@ server.app = function(input, output, session) {
 		}
 	}
 	
-	observeEvent(input$menu.top, {
-		if(values$Active == "Data") {
-			print("Switched");
-			filter.byTable();
-			values$Active = "Other";
-		}
-	})
-	
 	freq.hla = function() {
 		x = values$fltData[c("Peptide", "HLA")];
-		# isDuplic = duplicated(x);
-		# x = x[ ! isDuplic, ];
 		freq.population(x, options$HLA);
 	}
 	
@@ -63,7 +62,7 @@ server.app = function(input, output, session) {
 		values$fltGlData = x;
 		values$fltData   = x;
 		cat("Rows: ", nrow(x), "\n");
-		output$tblData = DT::renderDT(dataTable());
+		# output$tblData = DT::renderDT(dataTable());
 	}
 	filter.HLA = function(x, fltAllele) {
 		if(fltAllele == "all") return(x);
@@ -81,7 +80,8 @@ server.app = function(input, output, session) {
 	}
 	#
 	option.regex = function(x, varia = NULL, caseInsens = TRUE) {
-		opt = list(search = list(regex = x, caseInsensitive = caseInsens));
+		opt = list(search = list(regex = x, caseInsensitive = caseInsens),
+			searchHighlight = TRUE);
 		if( ! is.null(varia)) opt = c(opt, varia);
 		return(opt);
 	}
@@ -130,12 +130,10 @@ server.app = function(input, output, session) {
 		DT::datatable(values$fltGlData, filter = 'top',
 			options = option.regex(values$reg.Data, varia=varia));
 	})
-	# probably NOT needed
-	# output$tblData <- DT::renderDT ({
-	#	reset.tab();
-	#	DT::datatable(values$fltGlData, filter = 'top',
-	#		options = option.regex(values$reg.Data));
-	# })
+	
+	observeEvent(values$fltGlData, {
+		output$tblData = DT::renderDT(dataTable());
+	})
 	
 	# HLA Alleles
 	output$tblAlleles <- DT::renderDT ({
@@ -151,13 +149,7 @@ server.app = function(input, output, session) {
 		# values$Active = "PP";
 		output$tblAllelesPP = NULL; # Reset 2nd & 3rd Tables;
 		output$tblTotalPopulation = NULL;
-		x = data.frame(table(values$fltData$Peptide));
-		names(x)[1] = "Peptide";
-		x$Peptide = as.character(x$Peptide);
-		x$Len = nchar(x$Peptide);
-		x = merge(x, freq.hla(), by = "Peptide");
-		x$Total = round(x$A + x$B + x$C, 5);
-		x$Ti = round(x$Total - (x$A + x$B)*x$C + x$A*x$B*(x$C - 1), 5);
+		x = freq.all(values$fltData$Peptide, freq.hla());
 		values$pp = x;
 		#
 		DT::datatable(x, filter = 'top',

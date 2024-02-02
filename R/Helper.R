@@ -27,6 +27,18 @@ freq.population = function(x, f) {
 	return(tf);
 }
 
+freq.all = function(x, hla, digits = 5) {
+	if(is.null(x)) return(NULL);
+	x = data.frame(table(x));
+	names(x)[1] = "Peptide";
+	x$Peptide = as.character(x$Peptide);
+	x$Len = nchar(x$Peptide);
+	x = merge(x, hla, by = "Peptide");
+	x$Total = round(x$A + x$B + x$C, digits);
+	x$Ti = round(x$Total - (x$A + x$B)*x$C + x$A*x$B*(x$C - 1), digits);
+	return(x);
+}
+
 freq.populationTotal = function(x, f, digits = 3) {
 	x = if(inherits(x, "data.frame")) x["HLA", drop = FALSE] else data.frame(HLA = x);
 	x = merge(x, f, by = "HLA", all.x = TRUE);
