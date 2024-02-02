@@ -22,7 +22,7 @@ server.app = function(input, output, session) {
 	values = reactiveValues(
 		Active    = "Not",  # Active Tab
 		fullData  = NULL,   # initial Data
-		fltGlData = NULL,   # Globally filtered Data
+		dfGlData  = NULL,   # Globally filtered Data
 		dfFltData = NULL,   # Data filtered in Table
 		reg.Data  = options$reg.Data,
 		fltRank   = NULL,   # is set automatically
@@ -40,7 +40,7 @@ server.app = function(input, output, session) {
 	})
 	
 	# Reset Filters on Data table
-	hasData = function() { ! is.null(values$fltGlData); }
+	hasData = function() { ! is.null(values$dfGlData); }
 	reset.tab = function() {}
 	
 	freq.hla = function() {
@@ -53,13 +53,14 @@ server.app = function(input, output, session) {
 	}
 	filter.df = function() {
 		if(is.null(values$fullData)) return();
+		getFilter.tblData();
 		lim.rank  = values$fltRank;
 		fltAllele = values$fltAllele;
 		x = values$fullData;
 		x = x[x$Rank <= lim.rank, ];
 		x = filter.HLA(x, fltAllele);
 		#
-		values$fltGlData = x;
+		values$dfGlData = x;
 		cat("Rows: ", nrow(x), "\n");
 	}
 	filter.HLA = function(x, fltAllele) {
@@ -75,7 +76,7 @@ server.app = function(input, output, session) {
 	filter.byTable = function() {
 		print("Filter Table 2");
 		id = input$tblData_rows_all;
-		values$dfFltData = values$fltGlData[id, ];
+		values$dfFltData = values$dfGlData[id, ];
 	}
 	#
 	option.regex = function(x, varia = NULL, caseInsens = TRUE) {
@@ -112,36 +113,38 @@ server.app = function(input, output, session) {
 		values$fltAllele = input$fltAllele;
 		filter.df();
 	})
-	getFilter.tblData = function() {
-		flt = input$tblData_search_columns;
-		flt = c("", flt); # Row ID
-		if(all(flt == "")) return(NULL);
-		flt = lapply(flt, function(x) if(x == "") NULL else list(search = x));
-		return(flt);
-	}
 	observeEvent(input$chkRegex, {
 		isReg = input$chkRegex;
 		if(values$reg.Data != isReg) {
 			values$reg.Data = isReg;
-			# output$tblData = DT::renderDT(dataTable());
 		}
 	})
+	
+	### Tbl Filter
+	getFilter.tblData = function() {
+		flt = input$tblData_search_columns;
+		flt = c("", flt); # Row ID
+		if(all(flt == "")) {
+			values$fltCols = NULL;
+			return(NULL);
+		}
+		flt = lapply(flt, function(x) if(x == "") NULL else list(search = x));
+		values$fltCols = flt;
+		return(flt);
+	}
 	
 	### Tables
 	
 	# Data
 	dataTable = function() ({
-		print("Rendering table!");
-		flt = getFilter.tblData();
+		# print("Rendering table!");
+		flt = values$fltCols; # getFilter.tblData();
 		if(! is.null(flt)) flt = list(searchCols = flt);
-		DT::datatable(values$fltGlData, filter = 'top',
+		DT::datatable(values$dfGlData, filter = 'top',
 			options = option.regex(values$reg.Data, varia = flt));
 	})
 	
 	output$tblData = DT::renderDT(dataTable())
-	# observeEvent(values$fltGlData, {
-		# output$tblData = DT::renderDT(dataTable());
-	# })
 	
 	# HLA Alleles
 	output$tblAlleles <- DT::renderDT ({
