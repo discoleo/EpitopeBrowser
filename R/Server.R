@@ -8,11 +8,12 @@ server.app = function(input, output, session) {
 	# Global Options
 	options = list(
 		hla.strip = TRUE, # HLA-A... => A...;
-		sep = ",",       # csv Separator
+		sep = ",",        # csv Separator
 		HLA = as.data.frame.hla(),
-		reg.Data = TRUE,  # Regex for Data-Table
-		reg.PP   = TRUE,  # Regex for Epitopes-Table
-		col.Pr   = "#FF0032A0",
+		reg.Data  = TRUE,  # Regex for Data-Table
+		reg.PP    = TRUE,  # Regex for Epitopes-Table
+		highlight = TRUE,  # Highlight Search Term
+		col.Pr    = "#FF0032A0",
 		border.Pr = "#640000A0",
 		lwd.Pr   = 1.5 # NOT used with Polygon
 	);
@@ -22,30 +23,28 @@ server.app = function(input, output, session) {
 		Active    = "Not",  # Active Tab
 		fullData  = NULL,   # initial Data
 		fltGlData = NULL,   # Globally filtered Data
-		fltData   = NULL,   # Data filtered in Table
-		reg.Data  = options$reg.Data
+		dfFltData = NULL,   # Data filtered in Table
+		reg.Data  = options$reg.Data,
+		fltRank   = NULL,   # is set automatically
+		fltAllele = NULL,
+		fltCols   = NULL # TODO
 	);
 	
 	### Menu Tabs
 	observeEvent(input$menu.top, {
-		if(values$Active == "Data") {
+		if(input$menu.top != "Data") {
 			print("Switched");
 			filter.byTable();
-			values$Active = "Other";
+			# values$Active = "Other";
 		}
 	})
 	
 	# Reset Filters on Data table
 	hasData = function() { ! is.null(values$fltGlData); }
-	reset.tab = function() {
-		if(values$Active != "Data" && hasData()) {
-			values$Active  = "Data";
-			values$fltData = values$fltGlData;
-		}
-	}
+	reset.tab = function() {}
 	
 	freq.hla = function() {
-		x = values$fltData[c("Peptide", "HLA")];
+		x = values$dfFltData[c("Peptide", "HLA")];
 		freq.population(x, options$HLA);
 	}
 	
@@ -53,16 +52,15 @@ server.app = function(input, output, session) {
 		sub("(?i)^HLA-", "", x);
 	}
 	filter.df = function() {
-		lim.rank  = input$rank;
-		fltAllele = input$fltAllele;
+		if(is.null(values$fullData)) return();
+		lim.rank  = values$fltRank;
+		fltAllele = values$fltAllele;
 		x = values$fullData;
 		x = x[x$Rank <= lim.rank, ];
 		x = filter.HLA(x, fltAllele);
 		#
 		values$fltGlData = x;
-		values$fltData   = x;
 		cat("Rows: ", nrow(x), "\n");
-		# output$tblData = DT::renderDT(dataTable());
 	}
 	filter.HLA = function(x, fltAllele) {
 		if(fltAllele == "all") return(x);
@@ -75,19 +73,20 @@ server.app = function(input, output, session) {
 		return(x);
 	}
 	filter.byTable = function() {
+		print("Filter Table 2");
 		id = input$tblData_rows_all;
-		values$fltData = values$fltGlData[id, ];
+		values$dfFltData = values$fltGlData[id, ];
 	}
 	#
 	option.regex = function(x, varia = NULL, caseInsens = TRUE) {
 		opt = list(search = list(regex = x, caseInsensitive = caseInsens),
-			searchHighlight = TRUE);
+			searchHighlight = options$highlight);
 		if( ! is.null(varia)) opt = c(opt, varia);
 		return(opt);
 	}
 	
 	# File Input
-	observe({
+	observeEvent(input$file, {
 		file1 = input$file;
 		if (is.null(file1)) 
 			return(NULL);
@@ -104,41 +103,50 @@ server.app = function(input, output, session) {
 		filter.df();
 	})
 	observeEvent(input$rank, {
+		if(! is.null(values$fltRank) && input$rank == values$fltRank) return();
+		values$fltRank = input$rank;
 		filter.df();
 	})
 	observeEvent(input$fltAllele, {
+		if(! is.null(values$fltAllele) && input$fltAllele == values$fltAllele) return();
+		values$fltAllele = input$fltAllele;
 		filter.df();
 	})
-	observeEvent(input$chkRegex, {
-		isReg = input$chkRegex;
-		values$reg.Data = isReg;
+	getFilter.tblData = function() {
 		flt = input$tblData_search_columns;
 		flt = c("", flt); # Row ID
+		if(all(flt == "")) return(NULL);
 		flt = lapply(flt, function(x) if(x == "") NULL else list(search = x));
-		output$tblData <- DT::renderDT(dataTable(varia = list(searchCols = flt)));
+		return(flt);
+	}
+	observeEvent(input$chkRegex, {
+		isReg = input$chkRegex;
+		if(values$reg.Data != isReg) {
+			values$reg.Data = isReg;
+			# output$tblData = DT::renderDT(dataTable());
+		}
 	})
-	
-	# observeEvent(input$tblData_search_columns, {
-	#	filter.byTable();
-	# })
 	
 	### Tables
 	
 	# Data
-	dataTable = function(varia = NULL) ({
-		reset.tab();
+	dataTable = function() ({
+		print("Rendering table!");
+		flt = getFilter.tblData();
+		if(! is.null(flt)) flt = list(searchCols = flt);
 		DT::datatable(values$fltGlData, filter = 'top',
-			options = option.regex(values$reg.Data, varia=varia));
+			options = option.regex(values$reg.Data, varia = flt));
 	})
 	
-	observeEvent(values$fltGlData, {
-		output$tblData = DT::renderDT(dataTable());
-	})
+	output$tblData = DT::renderDT(dataTable())
+	# observeEvent(values$fltGlData, {
+		# output$tblData = DT::renderDT(dataTable());
+	# })
 	
 	# HLA Alleles
 	output$tblAlleles <- DT::renderDT ({
 		# values$Active = "Alleles";
-		x = values$fltData$HLA;
+		x = values$dfFltData$HLA;
 		x = data.frame(table(x));
 		names(x)[1] = "HLA";
 		DT::datatable(x, filter = 'top');
@@ -149,7 +157,7 @@ server.app = function(input, output, session) {
 		# values$Active = "PP";
 		output$tblAllelesPP = NULL; # Reset 2nd & 3rd Tables;
 		output$tblTotalPopulation = NULL;
-		x = freq.all(values$fltData$Peptide, freq.hla());
+		x = freq.all(values$dfFltData$Peptide, freq.hla());
 		values$pp = x;
 		#
 		DT::datatable(x, filter = 'top',
@@ -168,7 +176,7 @@ server.app = function(input, output, session) {
 			return();
 		}
 		pp = values$pp[ids, "Peptide"];
-		x  = values$fltData[c("HLA", "Peptide")]
+		x  = values$dfFltData[c("HLA", "Peptide")]
 		x  = x[x$Peptide %in% pp, ];
 		output$tblAllelesPP = DT::renderDT(
 			DT::datatable(x, filter = 'top',
@@ -219,7 +227,7 @@ server.app = function(input, output, session) {
 	
 	### Protein Graph
 	output$imgProtein <- renderPlot({
-		nS = unique(values$fltData$start);
+		nS = unique(values$dfFltData$start);
 		plot.new();
 		plot.window(xlim = range(nS), ylim = c(0, 2));
 		for(npos in nS) {
