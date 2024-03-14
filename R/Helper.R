@@ -6,6 +6,16 @@ check.hla.df = function(x) {
 	return(x);
 }
 
+merge.hla = function(x, f, digits = 2) {
+	if(nrow(x) == 0) warning("No data!");
+	idHLA = match(c("HLA", "Freq"), names(f));
+	f = f[, idHLA];
+	f[, 2] = round(f[, 2] * 100, digits = digits);
+	names(f)[2] = "Population (%)"
+	x = merge(x, f, by = "HLA", all.x = TRUE);
+	return(x);
+}
+
 freq.population = function(x, f) {
 	if(nrow(x) == 0) warning("No data!");
 	x  = merge(x[c("HLA", "Peptide")], f, by = "HLA", all.x = TRUE);

@@ -64,11 +64,22 @@ server.app = function(input, output, session) {
 		cat("Rows: ", nrow(x), "\n");
 	}
 	filter.HLA = function(x, fltAllele) {
-		if(fltAllele == "all") return(x);
+		if(fltAllele == "All") return(x);
 		#
 		hla = if(options$hla.strip) x$HLA else trim(x$HLA);
-		isHLA = hla %in% options$HLA$HLA;
-		if(fltAllele == "uncommon") isHLA = ! isHLA;
+		if(fltAllele == ">= 3%") {
+			frequentHLA = options$HLA$HLA[options$HLA$Freq >= 0.03];
+			isHLA = hla %in% frequentHLA;
+		} else if(fltAllele == ">= 1%") {
+			frequentHLA = options$HLA$HLA[options$HLA$Freq >= 0.01];
+			isHLA = hla %in% frequentHLA;
+		} else if(fltAllele == "< 1%") {
+			frequentHLA = options$HLA$HLA[options$HLA$Freq < 0.01];
+			isHLA = hla %in% frequentHLA;
+		} else {
+			isHLA = hla %in% options$HLA$HLA;
+			if(fltAllele == "Uncommon") isHLA = ! isHLA;
+		}
 		# print("HLA"); print(head(options$HLA))
 		x = x[isHLA, ];
 		return(x);
@@ -152,6 +163,7 @@ server.app = function(input, output, session) {
 		x = values$dfFltData$HLA;
 		x = data.frame(table(x));
 		names(x)[1] = "HLA";
+		x = merge.hla(x, options$HLA);
 		DT::datatable(x, filter = 'top');
 	})
 	

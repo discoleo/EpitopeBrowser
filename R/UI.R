@@ -49,9 +49,10 @@ getUI = function() {
 						value = 0.2, min = 0, max = 2, step = 0.025),
 					selectInput("fltAllele",
 						label = "Filter alleles:",
-						choices = list("All" = "all", "Common" = "common",
-							"Uncommon" = "uncommon"),
-						selected = "all"),
+						choices = list("All" = "All", "Common / Known" = "Common",
+							">= 3%" = ">= 3%", ">= 1%" = ">= 1%",
+							"Uncommon (< 1%)" = "< 1%", "Uncommon (NA)" = "Uncommon"),
+						selected = "All"),
 					checkboxInput("chkRegex", "Regex Search: Data", value = TRUE)
 				),
 				mainPanel(DT::DTOutput("tblData"))
