@@ -1,15 +1,23 @@
 
 # Source:
-# http://www.allelefrequencies.net/top10freqs.asp
+# 1. http://www.allelefrequencies.net/top10freqs.asp
+# 2. Sacchi N, Castagnetta M, Miotti V, Garbarino L, Gallina A.
+#    High-resolution analysis of the HLA-A, -B, -C and -DRB1 alleles and national and
+#    regional haplotype frequencies based on 120,926 volunteers from the Italian
+#    Bone Marrow Donor Registry.
+#    HLA. 2019 Sep;94(3):285-295. https://doi.ORG/10.1111/tan.13613. PMID: 31207125;
 #
 #' @export
 hla = function() {
 	list(
 	# for Europe:
 	A = data.frame(
-		HLA = c("A*01:01", "A*02:01", "A*03:01", "A*11:01", "A*24:02", "A*26:01", "A*32:01"),
+		HLA = c("A*01:01", "A*02:01", "A*03:01", "A*11:01", "A*24:02", "A*26:01", "A*32:01",
+			# Italy: A68, A30, A02 {14,26,03};
+			"A*68:01", "A*30:01", "A*02:14", "A*02:26", "A*02:03"),
 		Type = "A",
-		Freq = c(0.124, 0.2624, 0.1185, 0.059, 0.101, 0.0385, 0.0385)),
+		Freq = c(0.124, 0.2624, 0.1185, 0.059, 0.101, 0.0385, 0.0385,
+			0.029, 0.027, 0.000095, 0.000083, 0.000062)),
 	B = data.frame(
 		HLA = c("B*07:02", "B*08:01", "B*15:01", "B*18:01", "B*35:01", "B*44:02", "B*44:03", "B*51:01"),
 		Type = "B",
