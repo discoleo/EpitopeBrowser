@@ -88,6 +88,12 @@ server.app = function(input, output, session) {
 		x = x[isHLA, ];
 		return(x);
 	}
+	# Table Filter:
+	filter.byTable0 = function() {
+		id = input$tblData_rows_all;
+		if(is.null(id)) return(NULL);
+		values$dfGlData[id, ];
+	}
 	filter.byTable = function() {
 		print("Filter Table 2");
 		id = input$tblData_rows_all;
@@ -112,8 +118,10 @@ server.app = function(input, output, session) {
 			# EIDB: new format / unedited;
 			x = x[, c(6,2,3,4,5,7,11,8)];
 			names(x)[c(1,2,5,6,8)] = c("HLA", "Peptide", "Len", "ID", "Rank");
-		} else {
+		} else if(is.numeric(x[,2])) {
 			names(x)[c(1,2,6,8)] = c("HLA", "Seq", "Peptide", "Rank");
+		} else {
+			# Saved Data: nothing;
 		}
 		if(options$hla.strip) x$HLA = trim(x$HLA);
 		#
@@ -225,6 +233,20 @@ server.app = function(input, output, session) {
 	})
 	
 	### Save Data
+	# Filtered Data:
+	output$downloadData <- downloadHandler(
+		filename = function() {
+			paste("PP.Filtered", ".csv", sep = "");
+		},
+		content = function(file) {
+			# TODO: check first if NULL;
+			# All rows: https://rstudio.github.io/DT/shiny.html
+			x = filter.byTable0();
+			if(is.null(x)) return(NULL);
+			write.csv(x, file, row.names = FALSE);
+		}
+	)
+	# Epitopes:
 	output$downloadPP <- downloadHandler(
 		filename = function() {
 			paste("PP.Freq", ".csv", sep = "");

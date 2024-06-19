@@ -53,7 +53,8 @@ getUI = function() {
 							">= 3%" = ">= 3%", ">= 1%" = ">= 1%",
 							"Uncommon (< 1%)" = "< 1%", "Uncommon (NA)" = "Uncommon"),
 						selected = "All"),
-					checkboxInput("chkRegex", "Regex Search: Data", value = TRUE)
+					checkboxInput("chkRegex", "Regex Search: Data", value = TRUE),
+					downloadButton("downloadData", "Download"),
 				),
 				mainPanel(DT::DTOutput("tblData"))
 		)),
