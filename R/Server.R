@@ -18,6 +18,10 @@ server.app = function(input, output, session) {
 		lwd.Pr   = 1.5 # NOT used with Polygon
 	);
 	
+	const = list(Warn = list(
+		DisplayHLA = "Select first some Epitopes in the table below.")
+	);
+	
 	# Dynamic variable
 	values = reactiveValues(
 		Active    = "Not",  # Active Tab
@@ -178,6 +182,7 @@ server.app = function(input, output, session) {
 		# values$Active = "PP";
 		output$tblAllelesPP = NULL; # Reset 2nd & 3rd Tables;
 		output$tblTotalPopulation = NULL;
+		output$txtBtnDisplay = renderText(const$Warn$DisplayHLA);
 		x = freq.all(values$dfFltData$Peptide, freq.hla());
 		values$pp = x;
 		#
@@ -194,8 +199,10 @@ server.app = function(input, output, session) {
 		if(is.null(values$pp) || length(ids) == 0) {
 			output$tblAllelesPP = NULL;
 			output$tblTotalPopulation = NULL;
+			output$txtBtnDisplay = renderText(const$Warn$DisplayHLA);
 			return();
 		}
+		output$txtBtnDisplay = NULL;
 		pp = values$pp[ids, "Peptide"];
 		x  = values$dfFltData[c("HLA", "Peptide")]
 		x  = x[x$Peptide %in% pp, ];
