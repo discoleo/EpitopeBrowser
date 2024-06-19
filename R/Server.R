@@ -104,7 +104,13 @@ server.app = function(input, output, session) {
 			return(NULL);
 		
 		x = read.csv(file1$datapath, header = TRUE, sep = options$sep);
-		names(x)[c(1,2,6,8)] = c("HLA", "Seq", "Peptide", "Rank");
+		if(is.numeric(x[,1])) {
+			# EIDB: new format / unedited;
+			x = x[, c(6,2,3,4,5,7,11,8)];
+			names(x)[c(1,2,5,8)] = c("HLA", "Seq", "Len", "Rank");
+		} else {
+			names(x)[c(1,2,6,8)] = c("HLA", "Seq", "Peptide", "Rank");
+		}
 		if(options$hla.strip) x$HLA = trim(x$HLA);
 		#
 		values$fullData = x;
