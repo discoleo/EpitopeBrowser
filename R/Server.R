@@ -107,7 +107,7 @@ server.app = function(input, output, session) {
 		if(is.numeric(x[,1])) {
 			# EIDB: new format / unedited;
 			x = x[, c(6,2,3,4,5,7,11,8)];
-			names(x)[c(1,2,5,8)] = c("HLA", "Seq", "Len", "Rank");
+			names(x)[c(1,2,5,6,8)] = c("HLA", "Peptide", "Len", "ID", "Rank");
 		} else {
 			names(x)[c(1,2,6,8)] = c("HLA", "Seq", "Peptide", "Rank");
 		}
