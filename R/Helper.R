@@ -1,4 +1,41 @@
 
+
+### Basic Functions
+
+### Read Epitopes
+# sep = separator used in the csv file;
+read.epi = function(file, hla.strip = TRUE, sep = ",") {
+	x = read.csv(file, header = TRUE, sep = sep);
+	if(is.numeric(x[,1])) {
+		# IEDB: new format / unedited;
+		hasMultiSeq = length(unique(x[,1])) > 1;
+		id = if(hasMultiSeq) c(6,2,3,4,5, 1, 7,11,8) else c(6,2,3,4,5,7,11,8);
+		x  = x[, id];
+		if(hasMultiSeq) {
+			idNms = c(1,2,5, 6,7,8,9);
+			nms = c("HLA", "Peptide", "Len", "Seq", "ID", "Score","Rank");
+		} else {
+			idNms = c(1,2,5, 6,7,8);
+			nms = c("HLA", "Peptide", "Len", "ID", "Score","Rank");
+		}
+		names(x)[idNms] = nms;
+	} else if(is.numeric(x[,2])) {
+		# Old / Modified csv-Files;
+		names(x)[c(1,2,6,8)] = c("HLA", "Seq", "Peptide", "Rank");
+	} else {
+		# Saved Data: nothing;
+	}
+	if(hla.strip) x$HLA = trim.hla(x$HLA);
+	return(x);
+}
+
+
+### HLA Tools
+
+trim.hla = function(x) {
+	sub("(?i)^HLA-", "", x);
+}
+
 check.hla.df = function(x) {
 	if(is.null(x$A)) x$A = 0;
 	if(is.null(x$B)) x$B = 0;

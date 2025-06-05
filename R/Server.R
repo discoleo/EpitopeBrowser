@@ -112,22 +112,9 @@ server.app = function(input, output, session) {
 		file1 = input$file;
 		if (is.null(file1)) 
 			return(NULL);
-		
-		x = read.csv(file1$datapath, header = TRUE, sep = options$sep);
-		if(is.numeric(x[,1])) {
-			# EIDB: new format / unedited;
-			hasMultiSeq = length(unique(x[,1])) > 1;
-			id = if(hasMultiSeq) c(6,2,3,4,5,1,7,11,8) else c(6,2,3,4,5,7,11,8);
-			x  = x[, id];
-			idNms = if(hasMultiSeq) c(1,2,5, 7,8,9) else c(1,2,5,6,7,8);
-			names(x)[idNms] = c("HLA", "Peptide", "Len", "ID", "Score","Rank");
-		} else if(is.numeric(x[,2])) {
-			names(x)[c(1,2,6,8)] = c("HLA", "Seq", "Peptide", "Rank");
-		} else {
-			# Saved Data: nothing;
-		}
-		if(options$hla.strip) x$HLA = trim(x$HLA);
 		#
+		x = read.epi(file1$datapath,
+			hla.strip = options$hla.strip, sep = options$sep);
 		values$fullData = x;
 	})
 	
