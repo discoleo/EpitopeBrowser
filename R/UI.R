@@ -74,9 +74,16 @@ getUI = function() {
 			column(3, DT::DTOutput("tblAllelesPP"))
 			),
 			fluidRow(
+				column(4,
 				downloadButton("downloadPP", "Download"),
 				actionButton("printPPSel", "Print Selection")
-			)
+				),
+				column(8,
+				fluidRow("Ti = Population coverage (assuming independence of A/B/C-alleles)"),
+				fluidRow("Total = Simple Total (rudimentary sum)")
+				)
+			),
+			
 		),
 		tabPanel("Protein", # icon = icon("Protein"),
 				plotOutput("imgProtein")
