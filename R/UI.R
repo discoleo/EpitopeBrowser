@@ -46,7 +46,7 @@ getUI = function() {
 					titlePanel("Load file"),
 					fileInput.csv("file", "Select CSV file"),
 					sliderInput(inputId = "rank", label = "Rank",
-						value = 0.2, min = 0, max = 2, step = 0.025),
+						value = 0.2, min = 0, max = 5, step = 0.25),
 					selectInput("fltAllele",
 						label = "Filter alleles:",
 						choices = list("All" = "All", "Common / Known" = "Common",
@@ -84,6 +84,19 @@ getUI = function() {
 				)
 			),
 			
+		),
+		tabPanel("SubSeq", # icon = icon("SubSeq"),
+			fluidRow(
+			column(4,
+				textInput("inSubSeq", "Peptide Seq", value = "")
+			),
+			column(4,
+				actionButton("btnSearchSubSeq", "Search"),
+				textOutput("txtBtnSearchSubSeq"))
+			),
+			fluidRow(
+			column(12, DT::DTOutput("tblSubSeq"))
+			)
 		),
 		tabPanel("Protein", # icon = icon("Protein"),
 				plotOutput("imgProtein")

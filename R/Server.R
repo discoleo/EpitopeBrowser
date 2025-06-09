@@ -7,23 +7,31 @@ getServer = function(x) {
 server.app = function(input, output, session) {
 	# Global Options
 	options = list(
-		fltRank   = 0.55, # Filter: only <= limit;
+		fltRank   = 0.55, # Default value for Rank-Filter;
 		hla.strip = TRUE, # HLA-A... => A...;
 		sep = ",",        # csv Separator
 		HLA = as.data.frame.hla(),
+		# Regex & Other Options:
 		reg.Data  = TRUE,  # Regex for Data-Table
 		reg.PP    = TRUE,  # Regex for Epitopes-Table
 		highlight = TRUE,  # Highlight Search Term
+		# Sub-Seq:
+		allEpi.SubSeq = TRUE,
+		# Protein Graph:
 		col.Pr    = "#FF0032A0",
 		border.Pr = "#640000A0",
 		lwd.Pr   = 1.5 # NOT used with Polygon
 	);
 	
-	updateNumericInput(session, "rank", value = options$fltRank);
-	
 	const = list(Warn = list(
-		DisplayHLA = "Select first some Epitopes in the table below.")
+		DisplayHLA = "Select first some Epitopes in the table below."),
+		SearchSubSeq = "Search epitopes within this peptide."
 	);
+	
+	### Init:
+	updateNumericInput(session, "rank", value = options$fltRank);
+	# Labels:
+	output$txtBtnSearchSubSeq = renderText(const$SearchSubSeq);
 	
 	# Dynamic variable
 	values = reactiveValues(
@@ -275,6 +283,15 @@ server.app = function(input, output, session) {
 			paste0(x, collapse = ", "),
 			easyClose = TRUE, footer = NULL
 		));
+	})
+	
+	### Search Epitopes in Peptide
+	
+	observeEvent(input$btnSearchSubSeq, {
+		txt = input$inSubSeq;
+		dat = if(options$allEpi.SubSeq) values$fullData else values$dfFltData;
+		ids = find.subseq(txt, data = dat$Peptide, len = c(9, 11));
+		output$tblSubSeq = renderDT(dat[ids,]);
 	})
 	
 	### Protein Graph
