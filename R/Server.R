@@ -7,6 +7,7 @@ getServer = function(x) {
 server.app = function(input, output, session) {
 	# Global Options
 	options = list(
+		fltRank   = 0.55, # Filter: only <= limit;
 		hla.strip = TRUE, # HLA-A... => A...;
 		sep = ",",        # csv Separator
 		HLA = as.data.frame.hla(),
@@ -17,6 +18,8 @@ server.app = function(input, output, session) {
 		border.Pr = "#640000A0",
 		lwd.Pr   = 1.5 # NOT used with Polygon
 	);
+	
+	updateNumericInput(session, "rank", value = options$fltRank);
 	
 	const = list(Warn = list(
 		DisplayHLA = "Select first some Epitopes in the table below.")
@@ -31,7 +34,8 @@ server.app = function(input, output, session) {
 		reg.Data  = options$reg.Data,
 		fltRank   = NULL,   # is set automatically
 		fltAllele = NULL,
-		fltCols   = NULL # TODO
+		fltCols   = NULL, # TODO
+		multSeq   = FALSE
 	);
 	
 	### Menu Tabs
@@ -115,6 +119,9 @@ server.app = function(input, output, session) {
 		#
 		x = read.epi(file1$datapath,
 			hla.strip = options$hla.strip, sep = options$sep);
+		# Multiple Protein Sequences:
+		values$multSeq = if("Seq" %in% names(x)) TRUE else FALSE;
+		#
 		values$fullData = x;
 	})
 	
@@ -181,7 +188,11 @@ server.app = function(input, output, session) {
 		output$tblAllelesPP = NULL; # Reset 2nd & 3rd Tables;
 		output$tblTotalPopulation = NULL;
 		output$txtBtnDisplay = renderText(const$Warn$DisplayHLA);
-		x = freq.all(values$dfFltData$Peptide, freq.hla());
+		# Multiple Protein Sequences:
+		if(values$multSeq) {
+			idSeq = values$dfFltData$Seq;
+		} else idSeq = NULL;
+		x = freq.all(values$dfFltData$Peptide, freq.hla(), seqPP = idSeq);
 		values$pp = x;
 		#
 		DT::datatable(x, filter = 'top',
@@ -193,7 +204,8 @@ server.app = function(input, output, session) {
 	# Selected Rows:
 	observeEvent(input$ppHLA, {
 		ids = input$tblPeptides_rows_selected;
-		print(ids);
+		print(ids); # DEBUG
+		# NO Epitopes selected
 		if(is.null(values$pp) || length(ids) == 0) {
 			output$tblAllelesPP = NULL;
 			output$tblTotalPopulation = NULL;

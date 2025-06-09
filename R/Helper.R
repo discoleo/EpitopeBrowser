@@ -74,16 +74,24 @@ freq.population = function(x, f) {
 	return(tf);
 }
 
-freq.all = function(x, hla, digits = 5) {
+freq.all = function(x, hla, seqPP = NULL, digits = 5) {
 	if(is.null(x)) return(NULL);
-	x = data.frame(table(x));
-	names(x)[1] = "Peptide";
-	x$Peptide = as.character(x$Peptide);
-	x$Len = nchar(x$Peptide);
-	x = merge(x, hla, by = "Peptide");
-	x$Total = round(x$A + x$B + x$C, digits);
-	x$Ti = round(x$Total - (x$A + x$B)*x$C + x$A*x$B*(x$C - 1), digits);
-	return(x);
+	y = data.frame(table(x));
+	names(y)[1] = "Peptide";
+	y$Peptide = as.character(y$Peptide);
+	y$Len = nchar(y$Peptide);
+	y = merge(y, hla, by = "Peptide");
+	if(! is.null(seqPP)) {
+		if(length(x) != length(seqPP)) {
+			warning("Epitopes: Lengths do NOT match!");
+		}
+		id = match(y$Peptide, x);
+		y$Seq = seqPP[id];
+	}
+	# Population Coverage:
+	y$Total = round(y$A + y$B + y$C, digits);
+	y$Ti = round(y$Total - (y$A + y$B)*y$C + y$A*y$B*(y$C - 1), digits);
+	return(y);
 }
 
 freq.populationTotal = function(x, f, digits = 3) {
