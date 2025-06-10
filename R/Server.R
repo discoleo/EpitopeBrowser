@@ -24,14 +24,15 @@ server.app = function(input, output, session) {
 	);
 	
 	const = list(Warn = list(
-		DisplayHLA = "Select first some Epitopes in the table below."),
-		SearchSubSeq = "Search epitopes within this peptide."
+		DisplayHLA     = "Select first some Epitopes in the table below."),
+		SearchSubSeq   = "Search epitopes within this peptide.",
+		SearchNoSubSeq = paste("No epitopes found.",
+			"Please enter another peptide sequence for a new search."),
+		NULL
 	);
 	
 	### Init:
 	updateNumericInput(session, "rank", value = options$fltRank);
-	# Labels:
-	output$txtBtnSearchSubSeq = renderText(const$SearchSubSeq);
 	
 	# Dynamic variable
 	values = reactiveValues(
@@ -42,9 +43,13 @@ server.app = function(input, output, session) {
 		reg.Data  = options$reg.Data,
 		fltRank   = NULL,   # is set automatically
 		fltAllele = NULL,
-		fltCols   = NULL, # TODO
-		multSeq   = FALSE
+		fltCols   = NULL,   # TODO
+		multSeq   = FALSE,
+		# Sub-Sequences:
+		warnSubSeq = FALSE,
+		NULLARG = NULL
 	);
+	
 	
 	### Menu Tabs
 	observeEvent(input$menu.top, {
@@ -286,6 +291,15 @@ server.app = function(input, output, session) {
 	})
 	
 	### Search Epitopes in Peptide
+	# [Sub-Sequences]
+	
+	output$txtBtnSearchSubSeq = renderText({
+		if(values$warnSubSeq) {
+			txt = const$SearchNoSubSeq;
+		} else {
+			txt = const$SearchSubSeq;
+		}
+	});
 	
 	observeEvent(input$btnSearchSubSeq, {
 		txt = input$inSubSeq;
@@ -293,9 +307,11 @@ server.app = function(input, output, session) {
 		ids = find.subseq(txt, data = dat$Peptide, len = c(9, 11));
 		if(is.null(ids) || length(ids) == 0) {
 			output$tblSummarySubSeq = NULL;
-			output$tblSubSeq = NULL;
+			output$tblSubSeq  = NULL;
+			values$warnSubSeq = TRUE;
 			return();
 		}
+		values$warnSubSeq = FALSE;
 		tbl = dat[ids,];
 		tblSum = aggregate(Rank ~ Peptide, data = tbl, function(x) {
 			c(length(x), min(x));
