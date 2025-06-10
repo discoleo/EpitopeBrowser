@@ -324,7 +324,9 @@ server.app = function(input, output, session) {
 			DT::datatable(tblSum, filter = 'top',
 				options = option.regex(options$reg.PP,
 					varia = list(dom = "t"))));
-		output$tblSubSeq = renderDT(tbl);
+		output$tblSubSeq = renderDT(tbl, filter = 'top',
+				options = option.regex(options$reg.PP,
+					varia = list(dom = "t")));
 	})
 	
 	### Protein Graph
