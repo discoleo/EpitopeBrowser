@@ -150,3 +150,20 @@ subSeq = function(x, len, sort = TRUE, unique = TRUE) {
 	if(sort)   sSeq = sort(sSeq);
 	return(sSeq);
 }
+
+aggregate.subSeq = function(x, probs = 0.25, digits = 3, ...) {
+	tblSum = tapply(x$Rank, x$Peptide, simplify = FALSE,
+		function(x) {
+			data.frame("", 0, min(x),
+				round(quantile(x, probs=probs, na.rm = TRUE), digits = digits),
+				length(x));
+	});
+	tblSum = do.call(rbind, tblSum);
+	tblSum[1] = rownames(tblSum);
+	tblSum[2] = nchar(tblSum[1]);
+	rownames(tblSum) = NULL;
+	nms = paste0("Rank", probs);
+	nms = c("Peptide", "Len", "Rank", nms, "Count");
+	names(tblSum) = nms;
+	return(tblSum);
+}

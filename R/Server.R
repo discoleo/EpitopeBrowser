@@ -313,20 +313,13 @@ server.app = function(input, output, session) {
 		}
 		values$warnSubSeq = FALSE;
 		tbl = dat[ids,];
-		tblSum = aggregate(Rank ~ Peptide, data = tbl, function(x) {
-			c(length(x), min(x));
-		});
-		res = tblSum$Rank; tblSum$Rank = NULL;
-		tblSum$Len = nchar(tblSum$Peptide);
-		tblSum$Rank  = res[,2];
-		tblSum$Count = res[,1];
+		tblSum = aggregate.subSeq(tbl);
 		output$tblSummarySubSeq = renderDT(
 			DT::datatable(tblSum, filter = 'top',
-				options = option.regex(options$reg.PP,
-					varia = list(dom = "t"))));
-		output$tblSubSeq = renderDT(tbl, filter = 'top',
-				options = option.regex(options$reg.PP,
-					varia = list(dom = "t")));
+				options = option.regex(options$reg.PP)));
+		output$tblSubSeq = renderDT(
+			DT::datatable(tbl, filter = 'top',
+				options = option.regex(options$reg.PP)));
 	})
 	
 	### Protein Graph
