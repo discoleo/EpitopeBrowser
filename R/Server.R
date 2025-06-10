@@ -291,7 +291,24 @@ server.app = function(input, output, session) {
 		txt = input$inSubSeq;
 		dat = if(options$allEpi.SubSeq) values$fullData else values$dfFltData;
 		ids = find.subseq(txt, data = dat$Peptide, len = c(9, 11));
-		output$tblSubSeq = renderDT(dat[ids,]);
+		if(is.null(ids) || length(ids) == 0) {
+			output$tblSummarySubSeq = NULL;
+			output$tblSubSeq = NULL;
+			return();
+		}
+		tbl = dat[ids,];
+		tblSum = aggregate(Rank ~ Peptide, data = tbl, function(x) {
+			c(length(x), min(x));
+		});
+		res = tblSum$Rank; tblSum$Rank = NULL;
+		tblSum$Len = nchar(tblSum$Peptide);
+		tblSum$Rank  = res[,2];
+		tblSum$Count = res[,1];
+		output$tblSummarySubSeq = renderDT(
+			DT::datatable(tblSum, filter = 'top',
+				options = option.regex(options$reg.PP,
+					varia = list(dom = "t"))));
+		output$tblSubSeq = renderDT(tbl);
 	})
 	
 	### Protein Graph

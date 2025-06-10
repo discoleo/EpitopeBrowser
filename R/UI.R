@@ -95,6 +95,9 @@ getUI = function() {
 				textOutput("txtBtnSearchSubSeq"))
 			),
 			fluidRow(
+			column(12, DT::DTOutput("tblSummarySubSeq"))
+			),
+			fluidRow(
 			column(12, DT::DTOutput("tblSubSeq"))
 			)
 		),
