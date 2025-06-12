@@ -17,6 +17,7 @@ server.app = function(input, output, session) {
 		highlight = TRUE,  # Highlight Search Term
 		# Sub-Seq:
 		allEpi.SubSeq = TRUE,
+		allEpi.EpiSummary = TRUE,
 		# Protein Graph:
 		col.Pr    = "#FF0032A0",
 		border.Pr = "#640000A0",
@@ -28,6 +29,9 @@ server.app = function(input, output, session) {
 		SearchSubSeq   = "Search epitopes within this peptide.",
 		SearchNoSubSeq = paste("No epitopes found.",
 			"Please enter another peptide sequence for a new search."),
+		EpiSummary     = "Enter list of epitopes to summarize.",
+		NoEpiSummary   = paste("No epitopes found.",
+			"Please enter a new list of epitopes to summarize."),
 		NULL
 	);
 	
@@ -47,6 +51,7 @@ server.app = function(input, output, session) {
 		multSeq   = FALSE,
 		# Sub-Sequences:
 		warnSubSeq = FALSE,
+		warnEpiSummary = FALSE,
 		NULLARG = NULL
 	);
 	
@@ -322,7 +327,39 @@ server.app = function(input, output, session) {
 				options = option.regex(options$reg.PP)));
 	})
 	
+	
+	### Summarize Epitopes
+	
+	output$txtBtnEpiSummary = renderText({
+		if(values$warnEpiSummary) {
+			txt = const$NoEpiSummary;
+		} else {
+			txt = const$EpiSummary;
+		}
+	});
+	
+	observeEvent(input$btnEpiSummary, {
+		if(is.null(values$fullData)) return();
+		txt = input$inEpiSummary;
+		txt = strsplit(txt, "[, \n\t]+");
+		txt = sort(txt[[1]]);
+		dat = if(options$allEpi.EpiSummary) values$fullData else values$dfFltData;
+		isRow = dat$Peptide %in% txt;
+		dat = dat[isRow, ];
+		if(nrow(dat) == 0) {
+			output$tblEpiSummary  = NULL;
+			values$warnEpiSummary = TRUE;
+			return();
+		}
+		values$warnEpiSummary = FALSE;
+		# TODO: summary
+		output$tblEpiSummary = renderDT(
+			DT::datatable(dat, filter = 'top',
+				options = option.regex(options$reg.PP)));
+	})
+	
 	### Protein Graph
+	
 	output$imgProtein <- renderPlot({
 		nS = unique(values$dfFltData$start);
 		plot.new();

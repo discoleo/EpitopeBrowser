@@ -101,6 +101,19 @@ getUI = function() {
 			column(12, DT::DTOutput("tblSubSeq"))
 			)
 		),
+		tabPanel("EpiSummary", # icon = icon("Summary"),
+			fluidRow(
+			column(4, # Epitopes which will be summarized
+				textInput("inEpiSummary", "Epitopes", value = "")
+			),
+			column(4,
+				actionButton("btnEpiSummary", "Summary"),
+				textOutput("txtBtnEpiSummary"))
+			),
+			fluidRow(
+			column(12, DT::DTOutput("tblEpiSummary"))
+			)
+		),
 		tabPanel("Protein", # icon = icon("Protein"),
 				plotOutput("imgProtein")
 		),
