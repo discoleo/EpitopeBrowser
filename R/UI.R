@@ -64,7 +64,7 @@ getUI = function() {
 		tabPanel("Epitopes", # icon = icon("Epitopes"),
 			fluidRow(
 			column(4,
-				actionButton("ppHLA", "Display HLA"),
+				actionButton("btnCovHLA", "Display HLA"),
 				textOutput("txtBtnDisplay")),
 			column(8, DT::DTOutput("tblTotalPopulation"))
 			),

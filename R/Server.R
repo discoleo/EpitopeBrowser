@@ -220,7 +220,7 @@ server.app = function(input, output, session) {
 	})
 	
 	# Selected Rows:
-	observeEvent(input$ppHLA, {
+	observeEvent(input$btnCovHLA, {
 		ids = input$tblPeptides_rows_selected;
 		print(ids); # DEBUG
 		# NO Epitopes selected
@@ -234,14 +234,15 @@ server.app = function(input, output, session) {
 		pp = values$pp[ids, "Peptide"];
 		x  = values$dfFltData[c("HLA", "Peptide")]
 		x  = x[x$Peptide %in% pp, ];
+		# HLA-Alleles covered:
 		output$tblAllelesPP = DT::renderDT(
 			DT::datatable(x, filter = 'top',
 				options = option.regex(options$reg.PP,
 					varia = list(dom = "lrtip", order = list(1, "asc"))))
 		);
-		# Total Population:
+		# Population: Overall Coverage
 		hla = unique(x$HLA);
-		xT = freq.populationTotal(hla, options$HLA);
+		xT  = freq.populationTotal(hla, options$HLA, digits = 3);
 		output$tblTotalPopulation = DT::renderDT(
 			DT::datatable(xT, rownames = FALSE,
 				options = option.regex(options$reg.PP,
