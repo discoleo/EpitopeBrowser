@@ -49,6 +49,9 @@ server.app = function(input, output, session) {
 		fltAllele = NULL,
 		fltCols   = NULL,   # TODO
 		multSeq   = FALSE,
+		# Population Coverage:
+		dfAllelesPP = NULL,
+		dfTotalPopulation = NULL,
 		# Sub-Sequences:
 		warnSubSeq = FALSE,
 		warnEpiSummary = FALSE,
@@ -117,6 +120,7 @@ server.app = function(input, output, session) {
 		values$dfGlData[id, ];
 	}
 	filter.byTable = function() {
+		# Analysis is performed on the filtered data;
 		print("Filter Table 2");
 		id = input$tblData_rows_all;
 		values$dfFltData = values$dfGlData[id, ];
@@ -203,20 +207,22 @@ server.app = function(input, output, session) {
 	# Epitopes
 	output$tblPeptides <- DT::renderDT ({
 		# values$Active = "PP";
-		output$tblAllelesPP = NULL; # Reset 2nd & 3rd Tables;
-		output$tblTotalPopulation = NULL;
+		# Reset 2nd & 3rd Tables:
+		values$dfAllelesPP = NULL;
+		values$dfTotalPopulation = NULL;
 		output$txtBtnDisplay = renderText(const$Warn$DisplayHLA);
 		# Multiple Protein Sequences:
+		nColTi = 8; # Col: Ti
 		if(values$multSeq) {
 			idSeq = values$dfFltData$Seq;
+			nColTi = 9;
 		} else idSeq = NULL;
 		x = freq.all(values$dfFltData$Peptide, freq.hla(), seqPP = idSeq);
 		values$pp = x;
 		#
 		DT::datatable(x, filter = 'top',
 			options = option.regex(options$reg.PP,
-				# nCol = 8: Ti;
-				varia = list(order = list(8, "desc"))));
+				varia = list(order = list(nColTi, "desc"))));
 	})
 	
 	# Selected Rows:
@@ -225,8 +231,8 @@ server.app = function(input, output, session) {
 		print(ids); # DEBUG
 		# NO Epitopes selected
 		if(is.null(values$pp) || length(ids) == 0) {
-			output$tblAllelesPP = NULL;
-			output$tblTotalPopulation = NULL;
+			values$dfAllelesPP = NULL;
+			values$dfTotalPopulation = NULL;
 			output$txtBtnDisplay = renderText(const$Warn$DisplayHLA);
 			return();
 		}
@@ -235,20 +241,23 @@ server.app = function(input, output, session) {
 		x  = values$dfFltData[c("HLA", "Peptide")]
 		x  = x[x$Peptide %in% pp, ];
 		# HLA-Alleles covered:
-		output$tblAllelesPP = DT::renderDT(
-			DT::datatable(x, filter = 'top',
-				options = option.regex(options$reg.PP,
-					varia = list(dom = "lrtip", order = list(1, "asc"))))
-		);
+		values$dfAllelesPP = x;
 		# Population: Overall Coverage
 		hla = unique(x$HLA);
 		xT  = freq.populationTotal(hla, options$HLA, digits = 3);
-		output$tblTotalPopulation = DT::renderDT(
-			DT::datatable(xT, rownames = FALSE,
+		values$dfTotalPopulation = xT;
+	})
+	
+	output$tblAllelesPP = DT::renderDT(
+			DT::datatable(values$dfAllelesPP, filter = 'top',
+				options = option.regex(options$reg.PP,
+					varia = list(dom = "lrtip", order = list(1, "asc"))))
+	);
+	output$tblTotalPopulation = DT::renderDT(
+			DT::datatable(values$dfTotalPopulation, rownames = FALSE,
 				options = option.regex(options$reg.PP,
 					varia = list(dom = "t")))
-		);
-	})
+	);
 	
 	### Save Data
 	# Filtered Data:
