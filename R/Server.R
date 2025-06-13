@@ -204,7 +204,8 @@ server.app = function(input, output, session) {
 		DT::datatable(x, filter = 'top');
 	})
 	
-	# Epitopes
+	### Epitopes: Population Coverage
+	
 	output$tblPeptides <- DT::renderDT ({
 		# values$Active = "PP";
 		# Reset 2nd & 3rd Tables:

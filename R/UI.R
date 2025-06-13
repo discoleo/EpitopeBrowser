@@ -10,20 +10,6 @@ init.theme = function() {
     );
 }
 
-### Shiny functions
-# Layout:
-sidebarLayout = function(...) shiny::sidebarLayout(...);
-fluidRow = function(...) shiny::fluidRow(...);
-column = function(...) shiny::column(...);
-# Panels:
-tabPanel = function(...) shiny::tabPanel(...);
-mainPanel = function(...) shiny::mainPanel(...);
-titlePanel = function(...) shiny::titlePanel(...);
-sidebarPanel = function(...) shiny::sidebarPanel(...);
-# Input:
-sliderInput = function(...) shiny::sliderInput(...);
-selectInput = function(...) shiny::selectInput(...);
-checkboxInput = function(...) shiny::checkboxInput(...);
 
 fileInput.csv = function(id, label) {
 	shiny::fileInput(id, label,
@@ -36,6 +22,23 @@ fileInput.csv = function(id, label) {
 }
 
 getUI = function() {
+	### Shiny functions
+	# - NO need to be visible in the app;
+	# Layout:
+	sidebarLayout = function(...) shiny::sidebarLayout(...);
+	fluidRow = function(...) shiny::fluidRow(...);
+	column = function(...) shiny::column(...);
+	# Panels:
+	tabPanel = function(...) shiny::tabPanel(...);
+	mainPanel = function(...) shiny::mainPanel(...);
+	titlePanel = function(...) shiny::titlePanel(...);
+	sidebarPanel = function(...) shiny::sidebarPanel(...);
+	# Input:
+	sliderInput = function(...) shiny::sliderInput(...);
+	selectInput = function(...) shiny::selectInput(...);
+	checkboxInput = function(...) shiny::checkboxInput(...);
+	# <----------------->
+	### UI:
 	shiny::shinyUI(
 	shiny::fluidPage(
 	shiny::navbarPage("HLA-Browser", id="menu.top",
