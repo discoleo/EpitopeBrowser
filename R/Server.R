@@ -242,9 +242,6 @@ server.app = function(input, output, session) {
 		# Total Population:
 		hla = unique(x$HLA);
 		xT = freq.populationTotal(hla, options$HLA);
-		Total = xT$A + xT$B + xT$C;
-		xT$Ti = round(Total - (xT$A + xT$B)*xT$C - xT$A*xT$B + xT$A*xT$B*xT$C, 3);
-		xT = cbind("Total" = "Population", xT);
 		output$tblTotalPopulation = DT::renderDT(
 			DT::datatable(xT, rownames = FALSE,
 				options = option.regex(options$reg.PP,
@@ -343,6 +340,7 @@ server.app = function(input, output, session) {
 		txt = input$inEpiSummary;
 		txt = strsplit(txt, "[, \n\t]+");
 		txt = sort(txt[[1]]);
+		# Process the entire Data set:
 		dat = if(options$allEpi.EpiSummary) values$fullData else values$dfFltData;
 		isRow = dat$Peptide %in% txt;
 		dat = dat[isRow, ];

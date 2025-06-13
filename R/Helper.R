@@ -37,6 +37,7 @@ trim.hla = function(x) {
 	sub("(?i)^HLA-", "", x);
 }
 
+# Expand NULL to zero;
 check.hla.df = function(x) {
 	if(is.null(x$A)) x$A = 0;
 	if(is.null(x$B)) x$B = 0;
@@ -75,6 +76,9 @@ freq.population = function(x, f) {
 	return(tf);
 }
 
+### Population Coverage
+# x   = Set of Peptides w HLA-Alleles;
+# hla = Frequency of HLA-Alleles;
 freq.all = function(x, hla, seqPP = NULL, digits = 5) {
 	if(is.null(x)) return(NULL);
 	y = data.frame(table(x));
@@ -90,12 +94,14 @@ freq.all = function(x, hla, seqPP = NULL, digits = 5) {
 		y$Seq = seqPP[id];
 	}
 	# Population Coverage:
-	y$Total = round(y$A + y$B + y$C, digits);
-	y$Ti = round(y$Total - (y$A + y$B)*y$C + y$A*y$B*(y$C - 1), digits);
+	yAB = y$A + y$B;
+	y$Total = yAB + y$C;
+	y$Ti    = round(y$Total - yAB*y$C + y$A*y$B*(y$C - 1), digits);
+	y$Total = round(y$Total, digits);
 	return(y);
 }
 
-freq.populationTotal = function(x, f, digits = 3) {
+freq.populationTotal = function(x, f, do.totals = TRUE, digits = 3) {
 	x = if(inherits(x, "data.frame")) x["HLA", drop = FALSE] else data.frame(HLA = x);
 	x = merge(x, f, by = "HLA", all.x = TRUE);
 	isMissing = is.na(x$Freq);
@@ -103,7 +109,7 @@ freq.populationTotal = function(x, f, digits = 3) {
 	x$Freq[isMissing] = 0;
 	tf  = tapply(x$Freq, x$Type, sum, na.rm = TRUE);
 	nms = names(tf);
-	tf  = matrix(tf, nrow = 1);
+	tf = matrix(tf, nrow = 1);
 	tf = round(tf, digits);
 	tf = data.frame(tf); names(tf) = nms;
 	tf = check.hla.df(tf);
@@ -113,6 +119,12 @@ freq.populationTotal = function(x, f, digits = 3) {
 		if(is.na(x)) 0 else x;
 	}
 	tf$A = asZ(tf$A); tf$B = asZ(tf$B); tf$C = asZ(tf$C);
+	if(do.totals) {
+		tfAB  = tf$A + tf$B;
+		Total = tfAB + tf$C;
+		tf$Ti = round(Total - tfAB*tf$C - tf$A*tf$B*(1 - tf$C), digits);
+		tf = cbind("Total" = "Population", tf); # "HLA" = c("Total")
+	}
 	return(tf);
 }
 
