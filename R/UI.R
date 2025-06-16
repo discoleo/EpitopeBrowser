@@ -64,6 +64,7 @@ getUI = function() {
 		tabPanel("Alleles", # icon = icon("HLA"),
 			mainPanel(DT::DTOutput("tblAlleles"))
 		),
+		# Population Coverage
 		tabPanel("Epitopes", # icon = icon("Epitopes"),
 			fluidRow(
 			column(4,
@@ -77,17 +78,21 @@ getUI = function() {
 			column(3, DT::DTOutput("tblAllelesPP"))
 			),
 			fluidRow(
-				column(4,
+				column(5,
 				downloadButton("downloadPP", "Download"),
-				actionButton("printPPSel", "Print Selection")
+				actionButton("printPPSel", "Print Selection"),
+				actionButton("btnRemainingEpi", "Remaining"),
 				),
-				column(8,
+				column(7,
 				fluidRow("Ti = Population coverage (assuming independence of A/B/C-alleles)"),
 				fluidRow("Total = Simple Total (rudimentary sum)")
 				)
 			),
-			
+			fluidRow(
+			column(12, DT::DTOutput("tblRemainingEpi"))
+			)
 		),
+		# Sub-Sequences
 		tabPanel("SubSeq", # icon = icon("SubSeq"),
 			fluidRow(
 			column(4,

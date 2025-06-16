@@ -50,8 +50,10 @@ server.app = function(input, output, session) {
 		fltCols   = NULL,   # TODO
 		multSeq   = FALSE,
 		# Population Coverage:
-		dfAllelesPP = NULL,
-		dfTotalPopulation = NULL,
+		dfPopCoverPP = NULL,
+		dfAllelesPP  = NULL,
+		dfTotalPopulation = NULL, # HLA & Epitope
+		fltHLAEpiSel      = NULL, # Only HLA covered by Selection
 		# Sub-Sequences:
 		warnSubSeq = FALSE,
 		warnEpiSummary = FALSE,
@@ -209,17 +211,17 @@ server.app = function(input, output, session) {
 	output$tblPeptides <- DT::renderDT ({
 		# values$Active = "PP";
 		# Reset 2nd & 3rd Tables:
-		values$dfAllelesPP = NULL;
+		values$dfAllelesPP       = NULL;
 		values$dfTotalPopulation = NULL;
 		output$txtBtnDisplay = renderText(const$Warn$DisplayHLA);
 		# Multiple Protein Sequences:
 		nColTi = 8; # Col: Ti
 		if(values$multSeq) {
-			idSeq = values$dfFltData$Seq;
+			idSeq  = values$dfFltData$Seq;
 			nColTi = 9;
 		} else idSeq = NULL;
 		x = freq.all(values$dfFltData$Peptide, freq.hla(), seqPP = idSeq);
-		values$pp = x;
+		values$dfPopCoverPP = x;
 		#
 		DT::datatable(x, filter = 'top',
 			options = option.regex(options$reg.PP,
@@ -231,22 +233,24 @@ server.app = function(input, output, session) {
 		ids = input$tblPeptides_rows_selected;
 		print(ids); # DEBUG
 		# NO Epitopes selected
-		if(is.null(values$pp) || length(ids) == 0) {
+		if(is.null(values$dfPopCoverPP) || length(ids) == 0) {
 			values$dfAllelesPP = NULL;
 			values$dfTotalPopulation = NULL;
+			values$fltHLAEpiSel  = NULL;
 			output$txtBtnDisplay = renderText(const$Warn$DisplayHLA);
 			return();
 		}
 		output$txtBtnDisplay = NULL;
-		pp = values$pp[ids, "Peptide"];
-		x  = values$dfFltData[c("HLA", "Peptide")]
+		pp = values$dfPopCoverPP[ids, "Peptide"];
+		x  = values$dfFltData[c("HLA", "Peptide")];
 		x  = x[x$Peptide %in% pp, ];
 		# HLA-Alleles covered:
 		values$dfAllelesPP = x;
 		# Population: Overall Coverage
-		hla = unique(x$HLA);
+		hla = sort(unique(x$HLA));
 		xT  = freq.populationTotal(hla, options$HLA, digits = 3);
 		values$dfTotalPopulation = xT;
+		values$fltHLAEpiSel = hla;
 	})
 	
 	output$tblAllelesPP = DT::renderDT(
@@ -259,6 +263,36 @@ server.app = function(input, output, session) {
 				options = option.regex(options$reg.PP,
 					varia = list(dom = "t")))
 	);
+	
+	# HLA: Remaining Epitopes
+	observeEvent(input$btnRemainingEpi, {
+		if(is.null(values$dfFltData) ||
+			nrow(values$dfFltData) == 0) return();
+		isHLA = values$dfFltData$HLA %in% values$fltHLAEpiSel;
+		print(values$fltHLAEpiSel); # Debug
+		cols  = if(values$multSeq) "Seq" else character(0);
+		cols  = c("Peptide", "HLA", cols);
+		dfHLA = values$dfFltData[! isHLA, cols, drop = FALSE];
+		if(nrow(dfHLA) == 0) {
+			print("NO more alleles!");
+			output$tblRemainingEpi = NULL;
+			return();
+		}
+		# TODO: quasi-duplicated code;
+		nColTi = 8; # Col: Ti
+		# Multiple Protein Sequences:
+		if(values$multSeq) {
+			idSeq  = dfHLA$Seq;
+			nColTi = 9;
+		} else idSeq = NULL;
+		freqHLA = freq.population(dfHLA[c("Peptide", "HLA")], options$HLA);
+		x = freq.all(dfHLA$Peptide, freqHLA, seqPP = idSeq);
+		x = x[x$Ti > 0, , drop = FALSE]; # Exclude: HLA w. freq = 0;
+		#
+		output$tblRemainingEpi = DT::renderDT(x, filter = 'top',
+			options = option.regex(options$reg.PP,
+				varia = list(order = list(nColTi, "desc"))));
+	})
 	
 	### Save Data
 	# Filtered Data:
@@ -284,7 +318,7 @@ server.app = function(input, output, session) {
 			# All rows: https://rstudio.github.io/DT/shiny.html
 			ids = input$tblPeptides_rows_all;
 			if(is.null(ids)) return(NULL);
-			x = values$pp[ids, ];
+			x = values$dfPopCoverPP[ids, ];
 			write.csv(x, file, row.names = FALSE);
 		}
 	)
@@ -294,7 +328,7 @@ server.app = function(input, output, session) {
 		# TODO: check first if NULL;
 		ids = input$tblPeptides_rows_selected;
 		if(is.null(ids) || length(ids) == 0) return(NULL);
-		x = values$pp$Peptide[ids];
+		x = values$dfPopCoverPP$Peptide[ids];
 		print(x);
 		showModal(modalDialog(
 			title = "Selection",

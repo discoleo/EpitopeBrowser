@@ -81,6 +81,7 @@ freq.population = function(x, f) {
 # hla = Frequency of HLA-Alleles;
 freq.all = function(x, hla, seqPP = NULL, digits = 5) {
 	if(is.null(x)) return(NULL);
+	# Count(Alleles HLA)
 	y = data.frame(table(x));
 	names(y)[1] = "Peptide";
 	y$Peptide = as.character(y$Peptide);
