@@ -85,7 +85,7 @@ getUI = function() {
 				),
 				column(7,
 				fluidRow("Ti = Population coverage (assuming independence of A/B/C-alleles)"),
-				fluidRow("Total = Simple Total (rudimentary sum)")
+				fluidRow("Tn = Simple Total (naive sum)")
 				)
 			),
 			fluidRow(

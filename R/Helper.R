@@ -95,10 +95,10 @@ freq.all = function(x, hla, seqPP = NULL, digits = 5) {
 		y$Seq = seqPP[id];
 	}
 	# Population Coverage:
-	yAB = y$A + y$B;
-	y$Total = yAB + y$C;
-	y$Ti    = round(y$Total - yAB*y$C + y$A*y$B*(y$C - 1), digits);
-	y$Total = round(y$Total, digits);
+	yAB  = y$A + y$B;
+	y$Tn = yAB + y$C; # Total sum (naive total);
+	y$Ti = round(y$Tn - yAB*y$C + y$A*y$B*(y$C - 1), digits);
+	y$Tn = round(y$Tn, digits);
 	return(y);
 }
 
