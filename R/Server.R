@@ -289,10 +289,29 @@ server.app = function(input, output, session) {
 		x = freq.all(dfHLA$Peptide, freqHLA, seqPP = idSeq);
 		x = x[x$Ti > 0, , drop = FALSE]; # Exclude: HLA w. freq = 0;
 		#
+		flt = getFilter.tblPopCovEpi();
+		flt = list(order = list(nColTi, "desc"),
+				searchCols = flt);
 		output$tblRemainingEpi = DT::renderDT(x, filter = 'top',
 			options = option.regex(options$reg.PP,
-				varia = list(order = list(nColTi, "desc"))));
+				varia = flt));
 	})
+	
+	getFilter.tblPopCovEpi = function() {
+		flt   = input$tblPeptides_search_columns;
+		nms   = if(values$multSeq) c("Len", "Seq") else "Len";
+		idCol = match(nms, names(values$dfPopCoverPP));
+		flt   = flt[idCol];
+		if(all(flt == "")) {
+			return(NULL);
+		}
+		nc = ncol(values$dfPopCoverPP) + 1; # Row id
+		idCol  = idCol + 1;
+		fltOld = lapply(flt, function(x) if(x == "") NULL else list(search = x));
+		fltNew = rep(list(NULL), nc);
+		for(id in seq_along(idCol)) fltNew[idCol[id]] = fltOld[id];
+		return(fltNew);
+	}
 	
 	### Save Data
 	# Filtered Data:
@@ -308,7 +327,8 @@ server.app = function(input, output, session) {
 			write.csv(x, file, row.names = FALSE);
 		}
 	)
-	# Epitopes:
+	
+	# Download Epitopes:
 	output$downloadPP <- downloadHandler(
 		filename = function() {
 			paste("PP.Freq", ".csv", sep = "");
