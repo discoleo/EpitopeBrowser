@@ -55,6 +55,7 @@ server.app = function(input, output, session) {
 		dfTotalPopulation = NULL, # HLA & Epitope
 		fltHLAEpiSel      = NULL, # Only HLA covered by Selection
 		dfRemainingEpi    = NULL,
+		optRemainingEpi   = list(), # Options/Filters for the table
 		pageTblPP    = NULL,      # Page in main PopCoverage Table
 		# Sub-Sequences:
 		warnSubSeq = FALSE,
@@ -282,25 +283,28 @@ server.app = function(input, output, session) {
 			values$dfRemainingEpi  = NULL;
 			return();
 		}
-		# TODO: quasi-duplicated code;
+		# TODO: was quasi-duplicated code;
 		nColTi = 8; # Col: Ti
 		# Multiple Protein Sequences:
 		if(values$multSeq) {
 			idSeq  = dfHLA$Seq;
 			nColTi = 9;
 		} else idSeq = NULL;
+		# Filter:
+		flt = getFilter.tblPopCovEpi();
+		flt = list(order = list(nColTi, "desc"),
+			searchCols = flt, dom = "tip");
+		# https://datatables.net/reference/option/dom
+		values$optRemainingEpi = option.regex(options$reg.PP, varia = flt);
+		# Data:
 		freqHLA = freq.population(dfHLA[c("Peptide", "HLA")], options$HLA);
 		x = freq.all(dfHLA$Peptide, freqHLA, seqPP = idSeq);
 		x = x[x$Ti > 0, , drop = FALSE]; # Exclude: HLA w. freq = 0;
 		values$dfRemainingEpi = x;
-		#
-		flt = getFilter.tblPopCovEpi();
-		flt = list(order = list(nColTi, "desc"),
-				searchCols = flt);
-		output$tblRemainingEpi = DT::renderDT(x, filter = 'top',
-			options = option.regex(options$reg.PP,
-				varia = flt));
 	})
+	output$tblRemainingEpi = DT::renderDT(
+			values$dfRemainingEpi, filter = "top",
+			options = values$optRemainingEpi)
 	
 	getFilter.tblPopCovEpi = function() {
 		flt   = input$tblPeptides_search_columns;
@@ -351,6 +355,7 @@ server.app = function(input, output, session) {
 		idR = match(epi, tbl);
 		pg  = idR %/% 10 + 1; # TODO: Items per page;
 		values$pageTblPP = list(Epi = epi, Page = pg);
+		# TODO: selectPage();
 	})
 	
 	### Save Data
