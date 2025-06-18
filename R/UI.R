@@ -79,9 +79,12 @@ getUI = function() {
 			),
 			fluidRow(
 				column(5,
+				fluidRow(
 				downloadButton("downloadPP", "Download"),
 				actionButton("printPPSel", "Print Selection"),
 				actionButton("btnRemainingEpi", "Remaining"),
+				),
+				fluidRow(textOutput("txtPPTblPage"))
 				),
 				column(7,
 				fluidRow("Ti = Population coverage (assuming independence of A/B/C-alleles)"),

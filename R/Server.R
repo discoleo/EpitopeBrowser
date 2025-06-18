@@ -54,6 +54,8 @@ server.app = function(input, output, session) {
 		dfAllelesPP  = NULL,
 		dfTotalPopulation = NULL, # HLA & Epitope
 		fltHLAEpiSel      = NULL, # Only HLA covered by Selection
+		dfRemainingEpi    = NULL,
+		pageTblPP    = NULL,      # Page in main PopCoverage Table
 		# Sub-Sequences:
 		warnSubSeq = FALSE,
 		warnEpiSummary = FALSE,
@@ -268,6 +270,7 @@ server.app = function(input, output, session) {
 	observeEvent(input$btnRemainingEpi, {
 		if(is.null(values$dfFltData) ||
 			nrow(values$dfFltData) == 0) return();
+		values$pageTblPP = NULL;
 		isHLA = values$dfFltData$HLA %in% values$fltHLAEpiSel;
 		print(values$fltHLAEpiSel); # Debug
 		cols  = if(values$multSeq) "Seq" else character(0);
@@ -276,6 +279,7 @@ server.app = function(input, output, session) {
 		if(nrow(dfHLA) == 0) {
 			print("NO more alleles!");
 			output$tblRemainingEpi = NULL;
+			values$dfRemainingEpi  = NULL;
 			return();
 		}
 		# TODO: quasi-duplicated code;
@@ -288,6 +292,7 @@ server.app = function(input, output, session) {
 		freqHLA = freq.population(dfHLA[c("Peptide", "HLA")], options$HLA);
 		x = freq.all(dfHLA$Peptide, freqHLA, seqPP = idSeq);
 		x = x[x$Ti > 0, , drop = FALSE]; # Exclude: HLA w. freq = 0;
+		values$dfRemainingEpi = x;
 		#
 		flt = getFilter.tblPopCovEpi();
 		flt = list(order = list(nColTi, "desc"),
@@ -312,6 +317,41 @@ server.app = function(input, output, session) {
 		for(id in seq_along(idCol)) fltNew[idCol[id]] = fltOld[id];
 		return(fltNew);
 	}
+	
+	output$txtPPTblPage = renderText({
+		pg = values$pageTblPP;
+		if(is.null(pg) || checkNoRemainingEpitopes())
+			return("Remaining epitopes: not yet selected.");
+		txt = paste0(pg$Epi, ": ", pg$Page, collapse = "; ");
+		txt = paste0("Epitope on page: ", txt);
+		return(txt);
+	})
+	
+	# Remaining Epitope: Find Page
+	checkNoRemainingEpitopes = function() {
+		idR = input$tblRemainingEpi_rows_selected;
+		if(is.null(idR) || length(idR) == 0)  {
+			print("Reset page!");
+			# values$pageTblPP = NULL;
+			return(TRUE);
+		}
+		return(FALSE);
+	}
+	observeEvent(input$tblRemainingEpi_rows_selected, {
+		if(checkNoRemainingEpitopes()) {
+			values$pageTblPP = NULL;
+			return();
+		}
+		# Selected Epitopes:
+		idR = input$tblRemainingEpi_rows_selected;
+		epi = values$dfRemainingEpi$Peptide[idR];
+		# Main Table
+		ide = input$tblPeptides_rows_all;
+		tbl = values$dfPopCoverPP$Peptide[ide];
+		idR = match(epi, tbl);
+		pg  = idR %/% 10 + 1; # TODO: Items per page;
+		values$pageTblPP = list(Epi = epi, Page = pg);
+	})
 	
 	### Save Data
 	# Filtered Data:
