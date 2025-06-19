@@ -360,7 +360,16 @@ server.app = function(input, output, session) {
 		idR = match(epi, tbl);
 		pg  = idR %/% 10 + 1; # TODO: Items per page;
 		values$pageTblPP = list(Epi = epi, Page = pg);
-		# TODO: selectPage();
+	})
+	
+	# Remaining Epitopes: GoTo Page
+	observeEvent(input$btnGoToPage, {
+		pp = values$pageTblPP;
+		if(is.null(pp) || length(pp$Page) == 0) return();
+		# Debug:
+		print(paste0("GoTo page: ", pp$Page[1]));
+		proxy = dataTableProxy('tblPeptides');
+		selectPage(proxy, pp$Page[1]);
 	})
 	
 	### Save Data
@@ -379,7 +388,7 @@ server.app = function(input, output, session) {
 	)
 	
 	# Download Epitopes:
-	output$downloadPP <- downloadHandler(
+	output$btnDownloadPP <- downloadHandler(
 		filename = function() {
 			paste("PP.Freq", ".csv", sep = "");
 		},

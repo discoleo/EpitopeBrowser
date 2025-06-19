@@ -80,9 +80,10 @@ getUI = function() {
 			fluidRow(
 				column(5,
 				fluidRow(
-				downloadButton("downloadPP", "Download"),
+				downloadButton("btnDownloadPP", "Download"),
 				actionButton("printPPSel", "Print Selection"),
 				actionButton("btnRemainingEpi", "Remaining"),
+				actionButton("btnGoToPage", "Go To"),
 				),
 				fluidRow(textOutput("txtPPTblPage"))
 				),
