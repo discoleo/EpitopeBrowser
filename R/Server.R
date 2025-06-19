@@ -300,6 +300,11 @@ server.app = function(input, output, session) {
 		freqHLA = freq.population(dfHLA[c("Peptide", "HLA")], options$HLA);
 		x = freq.all(dfHLA$Peptide, freqHLA, seqPP = idSeq);
 		x = x[x$Ti > 0, , drop = FALSE]; # Exclude: HLA w. freq = 0;
+		# Total Coverage:
+		ids  = match(x$Peptide, values$dfPopCoverPP$Peptide);
+		x$Tn = values$dfPopCoverPP$Ti[ids];
+		idNm = match("Tn", names(x));
+		names(x)[idNm] = "Ta";
 		values$dfRemainingEpi = x;
 	})
 	output$tblRemainingEpi = DT::renderDT(
