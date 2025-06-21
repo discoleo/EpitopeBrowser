@@ -305,6 +305,8 @@ server.app = function(input, output, session) {
 		x$Tn = values$dfPopCoverPP$Ti[ids];
 		idNm = match("Tn", names(x));
 		names(x)[idNm] = "Ta";
+		ids = order(x$Ti, x$Ta, decreasing = TRUE);
+		x   = x[ids, ];
 		values$dfRemainingEpi = x;
 	})
 	output$tblRemainingEpi = DT::renderDT(
