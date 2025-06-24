@@ -21,7 +21,9 @@ fileInput.csv = function(id, label) {
     );
 }
 
-getUI = function() {
+
+# version = 1: Old variant;
+getUI = function(version = 2) {
 	### Shiny functions
 	# - NO need to be visible in the app;
 	# Layout:
@@ -65,7 +67,8 @@ getUI = function() {
 			mainPanel(DT::DTOutput("tblAlleles"))
 		),
 		# Population Coverage
-		getUI.PopCover.old(),
+		if(version == 1) getUI.PopCover.old()
+		else getUI.PopCover(),
 		# Sub-Sequences
 		tabPanel("SubSeq", # icon = icon("SubSeq"),
 			fluidRow(
@@ -105,7 +108,48 @@ getUI = function() {
 	)))
 }
 
-# Population Coverage
+### Population Coverage
+getUI.PopCover = function() {
+	tabPanel("Epitopes", # icon = icon("Epitopes"),
+	fluidRow(
+		column(4,
+			fluidRow("Ti = Population coverage (assuming independence of A/B/C-alleles)"),
+			fluidRow("Tn = Simple Total (naive sum)"),
+			fluidRow("Ta = All alleles included"),
+		),
+		column(8, DT::DTOutput("tblTotalPopulation"))
+	),
+	fluidRow(br()),
+	fluidRow(
+		# Left "Panel"
+		column(3,
+			fluidRow(
+				downloadButton("btnDownloadPP", "Download"),
+				actionButton("printPPSel", "Print Selection"),
+			),
+			fluidRow("Population Coverage:"),
+			fluidRow(
+				textOutput("txtBtnDisplay"),
+				actionButton("btnCovHLA", "Display HLA"),
+			),
+			fluidRow("Remaining Epitopes:"),
+			fluidRow(
+				actionButton("btnRemainingEpi", "Remaining"),
+				actionButton("btnGoToPage", "Go To"),
+			),
+			fluidRow(textOutput("txtPPTblPage")),
+		),
+		column(9,
+			fluidRow(DT::DTOutput("tblPeptides"))
+		)),
+	fluidRow(
+		column(9, DT::DTOutput("tblRemainingEpi")),
+		column(3, DT::DTOutput("tblAllelesPP"))
+	)
+	)
+}
+
+# Old variant:
 getUI.PopCover.old = function() {
 	tabPanel("Epitopes", # icon = icon("Epitopes"),
 	fluidRow(

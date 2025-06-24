@@ -2,7 +2,7 @@ Package: EpitopeBrowser
 Title: Interactive Shiny App to Browse Peptide Epitopes
 Version: 0.1.1
 Authors@R:
-    person("Leonard", "Mada", "leo.mada@syonic.eu", role = c("aut", "cre"))
+    person("Leonard", "Mada", "lmada@umft.ro", role = c("aut", "cre"))
 Depends: shiny, DT
 Description: Shiny web app to browse through a list of peptide epitopes. Computes also a crude population coverage.
 License: `use_gpl3_license()`

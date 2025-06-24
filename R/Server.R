@@ -257,9 +257,10 @@ server.app = function(input, output, session) {
 	})
 	
 	output$tblAllelesPP = DT::renderDT(
+			# old variant: dom = "lrtip"
 			DT::datatable(values$dfAllelesPP, filter = 'top',
 				options = option.regex(options$reg.PP,
-					varia = list(dom = "lrtip", order = list(1, "asc"))))
+					varia = list(dom = "tip", order = list(1, "asc"))))
 	);
 	output$tblTotalPopulation = DT::renderDT(
 			DT::datatable(values$dfTotalPopulation, rownames = FALSE,
