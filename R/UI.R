@@ -65,37 +65,7 @@ getUI = function() {
 			mainPanel(DT::DTOutput("tblAlleles"))
 		),
 		# Population Coverage
-		tabPanel("Epitopes", # icon = icon("Epitopes"),
-			fluidRow(
-			column(4,
-				actionButton("btnCovHLA", "Display HLA"),
-				textOutput("txtBtnDisplay")),
-			column(8, DT::DTOutput("tblTotalPopulation"))
-			),
-			fluidRow(br()),
-			fluidRow(
-			column(9, DT::DTOutput("tblPeptides")),
-			column(3, DT::DTOutput("tblAllelesPP"))
-			),
-			fluidRow(
-				column(5,
-				fluidRow(
-				downloadButton("btnDownloadPP", "Download"),
-				actionButton("printPPSel", "Print Selection"),
-				actionButton("btnRemainingEpi", "Remaining"),
-				actionButton("btnGoToPage", "Go To"),
-				),
-				fluidRow(textOutput("txtPPTblPage"))
-				),
-				column(7,
-				fluidRow("Ti = Population coverage (assuming independence of A/B/C-alleles)"),
-				fluidRow("Tn = Simple Total (naive sum)")
-				)
-			),
-			fluidRow(
-			column(12, DT::DTOutput("tblRemainingEpi"))
-			)
-		),
+		getUI.PopCover.old(),
 		# Sub-Sequences
 		tabPanel("SubSeq", # icon = icon("SubSeq"),
 			fluidRow(
@@ -133,4 +103,39 @@ getUI = function() {
 				uiOutput("txtHelp")
 		)
 	)))
+}
+
+# Population Coverage
+getUI.PopCover.old = function() {
+	tabPanel("Epitopes", # icon = icon("Epitopes"),
+	fluidRow(
+		column(4,
+			actionButton("btnCovHLA", "Display HLA"),
+			textOutput("txtBtnDisplay")),
+		column(8, DT::DTOutput("tblTotalPopulation"))
+	),
+	fluidRow(br()),
+	fluidRow(
+		column(9, DT::DTOutput("tblPeptides")),
+		column(3, DT::DTOutput("tblAllelesPP"))
+	),
+	fluidRow(
+		column(5,
+			fluidRow(
+				downloadButton("btnDownloadPP", "Download"),
+				actionButton("printPPSel", "Print Selection"),
+				actionButton("btnRemainingEpi", "Remaining"),
+				actionButton("btnGoToPage", "Go To"),
+			),
+			fluidRow(textOutput("txtPPTblPage"))
+		),
+		column(7,
+			fluidRow("Ti = Population coverage (assuming independence of A/B/C-alleles)"),
+			fluidRow("Tn = Simple Total (naive sum)")
+		)
+	),
+	fluidRow(
+		column(12, DT::DTOutput("tblRemainingEpi"))
+	)
+	);
 }
