@@ -24,8 +24,10 @@ server.app = function(input, output, session) {
 		lwd.Pr   = 1.5 # NOT used with Polygon
 	);
 	
-	const = list(Warn = list(
-		DisplayHLA     = "Select first some Epitopes in the table below."),
+	const = list(
+		DisplayHLA     = list(
+			Warn     = "Select first some Epitopes in the table below.",
+			More     = "Additional epitopes can be selected."),
 		SearchSubSeq   = "Search epitopes within this peptide.",
 		SearchNoSubSeq = paste("No epitopes found.",
 			"Please enter another peptide sequence for a new search."),
@@ -216,7 +218,7 @@ server.app = function(input, output, session) {
 		# Reset 2nd & 3rd Tables:
 		values$dfAllelesPP       = NULL;
 		values$dfTotalPopulation = NULL;
-		output$txtBtnDisplay = renderText(const$Warn$DisplayHLA);
+		output$txtBtnDisplay = renderText(const$DisplayHLA$Warn);
 		# Multiple Protein Sequences:
 		nColTi = 8; # Col: Ti
 		if(values$multSeq) {
@@ -240,10 +242,10 @@ server.app = function(input, output, session) {
 			values$dfAllelesPP = NULL;
 			values$dfTotalPopulation = NULL;
 			values$fltHLAEpiSel  = NULL;
-			output$txtBtnDisplay = renderText(const$Warn$DisplayHLA);
+			output$txtBtnDisplay = renderText(const$DisplayHLA$Warn);
 			return();
 		}
-		output$txtBtnDisplay = NULL;
+		output$txtBtnDisplay = renderText(const$DisplayHLA$More);
 		pp = values$dfPopCoverPP[ids, "Peptide"];
 		x  = values$dfFltData[c("HLA", "Peptide")];
 		x  = x[x$Peptide %in% pp, ];

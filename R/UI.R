@@ -127,12 +127,12 @@ getUI.PopCover = function() {
 				downloadButton("btnDownloadPP", "Download"),
 				actionButton("printPPSel", "Print Selection"),
 			),
-			fluidRow("Population Coverage:"),
+			fluidRow(h3("Population Coverage:")),
 			fluidRow(
 				textOutput("txtBtnDisplay"),
 				actionButton("btnCovHLA", "Display HLA"),
 			),
-			fluidRow("Remaining Epitopes:"),
+			fluidRow(h3("Remaining Epitopes:")),
 			fluidRow(
 				actionButton("btnRemainingEpi", "Remaining"),
 				actionButton("btnGoToPage", "Go To"),
