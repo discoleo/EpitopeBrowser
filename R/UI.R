@@ -108,8 +108,57 @@ getUI = function(version = 2) {
 	)))
 }
 
+#######################
+
 ### Population Coverage
+
 getUI.PopCover = function() {
+	tabPanel("Epitopes", # icon = icon("Epitopes"),
+	fluidRow(
+		column(4,
+			fluidRow("Ti = Population coverage (assuming independence of A/B/C-alleles)"),
+			fluidRow("Tn = Simple Total (naive sum)"),
+			fluidRow("Ta = All alleles included"),
+		),
+		column(8, DT::DTOutput("tblTotalPopulation"))
+	),
+	fluidRow(br()),
+	fluidRow(
+		column(9,
+			fluidRow(DT::DTOutput("tblPeptides"))
+		),
+		# Right "Panel": less mouse movement
+		column(3,
+		fluidRow(
+			column(1, ""),
+			column(11, offset = 1,
+			fluidRow(
+				downloadButton("btnDownloadPP", "Download"),
+				actionButton("printPPSel", "Print Selection"),
+			),
+			fluidRow(h3("Population Coverage:")),
+			fluidRow(
+				textOutput("txtBtnDisplay"),
+				actionButton("btnCovHLA", "Display HLA"),
+			),
+			fluidRow(h3("Remaining Epitopes:")),
+			fluidRow(
+				actionButton("btnRemainingEpi", "Remaining"),
+				actionButton("btnGoToPage", "Go To"),
+			),
+			fluidRow(textOutput("txtPPTblPage"))
+			))
+		)),
+	fluidRow(
+		column(3, DT::DTOutput("tblAllelesPP")),
+		column(9, DT::DTOutput("tblRemainingEpi"))
+	)
+	)
+}
+
+### Variant:
+# - a lot of mouse movement;
+getUI.PopCover.v0 = function() {
 	tabPanel("Epitopes", # icon = icon("Epitopes"),
 	fluidRow(
 		column(4,
