@@ -143,7 +143,7 @@ server.app = function(input, output, session) {
 	# File Input
 	observeEvent(input$file, {
 		file1 = input$file;
-		if (is.null(file1)) 
+		if (is.null(file1))
 			return(NULL);
 		#
 		x = read.epi(file1$datapath,
@@ -191,13 +191,13 @@ server.app = function(input, output, session) {
 	### Tables
 	
 	# Data
-	dataTable = function() ({
+	dataTable = function() {
 		# print("Rendering table!");
 		flt = values$fltCols; # getFilter.tblData();
 		if(! is.null(flt)) flt = list(searchCols = flt);
 		DT::datatable(values$dfGlData, filter = 'top',
 			options = option.regex(values$reg.Data, varia = flt));
-	})
+	}
 	
 	output$tblData = DT::renderDT(dataTable())
 	
@@ -363,7 +363,7 @@ server.app = function(input, output, session) {
 		ide = input$tblPeptides_rows_all;
 		tbl = values$dfPopCoverPP$Peptide[ide];
 		idR = match(epi, tbl);
-		pg  = idR %/% 10 + 1; # TODO: Items per page;
+		pg  = (idR - 1) %/% 10 + 1; # TODO: Items per page;
 		values$pageTblPP = list(Epi = epi, Page = pg);
 	})
 	
