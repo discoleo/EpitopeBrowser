@@ -9,7 +9,12 @@ read.epi = function(file, hla.strip = TRUE, sep = ",") {
 	if(is.numeric(x[,1])) {
 		# IEDB: new format / unedited;
 		hasMultiSeq = length(unique(x[,1])) > 1;
-		id = if(hasMultiSeq) c(6,2,3,4,5, 1, 7,11,8) else c(6,2,3,4,5,7,11,8);
+		# MHC-2 vs MGC-1:
+		idMHC2 = which(grepl("netmhciipan_el.score", names(x)));
+		isMHC2 = length(idMHC2) > 0;
+		#
+		id = if(isMHC2) idMHC2 else 11;
+		id = if(hasMultiSeq) c(6,2,3,4,5, 1, 7,id,8) else c(6,2,3,4,5,7,id,8);
 		x  = x[, id];
 		if(hasMultiSeq) {
 			idNms = c(1,2,5, 6,7,8,9);
