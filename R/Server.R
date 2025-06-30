@@ -316,11 +316,13 @@ server.app = function(input, output, session) {
 		x   = x[ids, ];
 		values$dfRemainingEpi = x;
 	})
-	output$tblRemainingEpi = DT::renderDT(
-			DT::datatable(values$dfRemainingEpi) |>
-			formatRound(c('A','B','C','Ta','Ti'), 3),
+	output$tblRemainingEpi = DT::renderDT({
+		if(is.null(values$dfRemainingEpi)) return(NULL);
+		DT::datatable(values$dfRemainingEpi,
 			filter = "top",
-			options = values$optRemainingEpi)
+			options = values$optRemainingEpi) |>
+		formatRound(c('A','B','C','Ta','Ti'), 3)
+	})
 	
 	getFilter.tblPopCovEpi = function() {
 		flt   = input$tblPeptides_search_columns;

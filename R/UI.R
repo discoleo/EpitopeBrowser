@@ -23,7 +23,7 @@ fileInput.csv = function(id, label) {
 
 
 # version = 1: Old variant;
-getUI = function(version = 2) {
+getUI = function(versionPop = 2) {
 	### Shiny functions
 	# - NO need to be visible in the app;
 	# Layout:
@@ -67,8 +67,7 @@ getUI = function(version = 2) {
 			mainPanel(DT::DTOutput("tblAlleles"))
 		),
 		# Population Coverage
-		if(version == 1) getUI.PopCover.old()
-		else getUI.PopCover(),
+		getUI.PopCover(version = versionPop),
 		# Sub-Sequences
 		tabPanel("SubSeq", # icon = icon("SubSeq"),
 			fluidRow(
@@ -112,7 +111,17 @@ getUI = function(version = 2) {
 
 ### Population Coverage
 
-getUI.PopCover = function() {
+getUI.PopCover = function(version = 2) {
+	if(version == 2) {
+		return(getUI.PopCover.v2());
+	} else if(version == 1) {
+		return(getUI.PopCover.v1());
+	} else if(version == 0) {
+		return(getUI.PopCover.old());
+	}
+	warning("Unsupported version!");
+}
+getUI.PopCover.v2 = function() {
 	tabPanel("Epitopes", # icon = icon("Epitopes"),
 	fluidRow(
 		column(4,
@@ -158,7 +167,7 @@ getUI.PopCover = function() {
 
 ### Variant:
 # - a lot of mouse movement;
-getUI.PopCover.v0 = function() {
+getUI.PopCover.v1 = function() {
 	tabPanel("Epitopes", # icon = icon("Epitopes"),
 	fluidRow(
 		column(4,
