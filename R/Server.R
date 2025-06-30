@@ -210,7 +210,8 @@ server.app = function(input, output, session) {
 		x = data.frame(table(x));
 		names(x)[1] = "HLA";
 		x = merge.hla(x, options$HLA);
-		DT::datatable(x, filter = 'top');
+		DT::datatable(x, filter = 'top') |>
+			formatRound('Population (%)', 2);
 	})
 	
 	### Epitopes: Population Coverage
@@ -232,7 +233,8 @@ server.app = function(input, output, session) {
 		#
 		DT::datatable(x, filter = 'top',
 			options = option.regex(options$reg.PP,
-				varia = list(order = list(nColTi, "desc"))));
+				varia = list(order = list(nColTi, "desc")))) |>
+		formatRound(c('A','B','C','Tn','Ti'), 4);
 	})
 	
 	# Selected Rows:
@@ -315,7 +317,9 @@ server.app = function(input, output, session) {
 		values$dfRemainingEpi = x;
 	})
 	output$tblRemainingEpi = DT::renderDT(
-			values$dfRemainingEpi, filter = "top",
+			DT::datatable(values$dfRemainingEpi) |>
+			formatRound(c('A','B','C','Ta','Ti'), 3),
+			filter = "top",
 			options = values$optRemainingEpi)
 	
 	getFilter.tblPopCovEpi = function() {

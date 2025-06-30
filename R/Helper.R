@@ -45,7 +45,8 @@ check.hla.df = function(x) {
 	return(x);
 }
 
-merge.hla = function(x, f, digits = 2) {
+### Tbl HLA Alleles
+merge.hla = function(x, f, digits = 6) {
 	if(nrow(x) == 0) warning("No data!");
 	idHLA = match(c("HLA", "Freq"), names(f));
 	f = f[, idHLA];
@@ -79,7 +80,7 @@ freq.population = function(x, f) {
 ### Population Coverage
 # x   = Set of Peptides w HLA-Alleles;
 # hla = Frequency of HLA-Alleles;
-freq.all = function(x, hla, seqPP = NULL, digits = 5) {
+freq.all = function(x, hla, seqPP = NULL, digits = 6) {
 	if(is.null(x)) return(NULL);
 	# Count(Alleles HLA)
 	y = data.frame(table(x));
@@ -102,7 +103,7 @@ freq.all = function(x, hla, seqPP = NULL, digits = 5) {
 	return(y);
 }
 
-freq.populationTotal = function(x, f, do.totals = TRUE, digits = 3) {
+freq.populationTotal = function(x, f, do.totals = TRUE, digits = 6) {
 	x = if(inherits(x, "data.frame")) x["HLA", drop = FALSE] else data.frame(HLA = x);
 	x = merge(x, f, by = "HLA", all.x = TRUE);
 	isMissing = is.na(x$Freq);
