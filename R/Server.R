@@ -195,8 +195,10 @@ server.app = function(input, output, session) {
 		# print("Rendering table!");
 		flt = values$fltCols; # getFilter.tblData();
 		if(! is.null(flt)) flt = list(searchCols = flt);
+		if(is.null(values$dfGlData)) return();
 		DT::datatable(values$dfGlData, filter = 'top',
-			options = option.regex(values$reg.Data, varia = flt));
+			options = option.regex(values$reg.Data, varia = flt)) |>
+		formatRound(c('Score', 'Rank'), c(4,2));
 	}
 	
 	output$tblData = DT::renderDT(dataTable())
