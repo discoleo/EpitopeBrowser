@@ -10,7 +10,7 @@ server.app = function(input, output, session) {
 		fltRank   = 0.55, # Default value for Rank-Filter;
 		hla.strip = TRUE, # HLA-A... => A...;
 		sep = ",",        # csv Separator
-		HLA = as.data.frame.hla(),
+		HLA = hla(type = "De"),
 		# Regex & Other Options:
 		reg.Data  = TRUE,  # Regex for Data-Table
 		reg.PP    = TRUE,  # Regex for Epitopes-Table
