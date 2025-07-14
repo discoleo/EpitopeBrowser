@@ -10,10 +10,15 @@
 #    Common and well-documented HLA alleles of German stem cell donors by
 #    haplotype frequency estimation.
 #    HLA. 2018 Oct;92(4):206-214. https://doi.org/10.1111/tan.13378. PMID: 30117303;
+# 4. Inotai D, Szilvasi A, Benko S, Boros-Major A, et al.
+#    HLA genetic diversity in Hungarians and Hungarian Gypsies:
+#    complementary differentiation patterns and demographic signals revealed
+#    by HLA-A, -B and -DRB1 in Central Europe. Tissue Antigens. 2015 Aug;86(2):115-21.
+#    https://doi.org/10.1111/tan.12600. PMID: 26149581.
 
 
 #' @export
-hla = function(type = c("Mix", "De", "Italy")) {
+hla = function(type = c("Mix", "De", "Italy", "Hungary")) {
 	type = match.arg(type);
 	if(type == 'Mix') {
 		lst = hla.mix();
@@ -21,6 +26,9 @@ hla = function(type = c("Mix", "De", "Italy")) {
 		lst = hla.de();
 	} else if(type == 'Italy') {
 		lst = hla.italy();
+	} else if(type == 'Hungary') {
+		# TODO: NOT yet functional (1-Level HLA code);
+		lst = hla.hungary();
 	}
 	lst = rbind(lst$A, lst$B, lst$C, lst$DP, lst$DQ, lst$DR);
 	return(lst);
@@ -226,5 +234,45 @@ hla.italy = function() {
 		Type = "DB",
 		Freq = c(NA)
 	) );
+}
+
+hla.hungary = function() {
+	# from 2015;
+	list(
+	A = data.frame(
+		HLA = c("A*01", "A*02", "A*03", "A*11", "A*23", "A*24",
+			"A*25", "A*26", "A*29", "A*30", "A*31", "A*32",
+			"A*33", "A*34", "A*36", "A*66", "A*68", "A*69",
+			"A*74", "A*80"),
+		Type = "A",
+		Freq = c(0.1521, 0.2923, 0.1180, 0.0596, 0.0298, 0.0888,
+			0.0401, 0.0526, 0.0189, 0.0280, 0.0143, 0.0356,
+			0.0146, 0.0009, 0.0006, 0.0085, 0.0423, 0.0012,
+			0.0015, 0.0003) ),
+	B = data.frame(
+		HLA = c("B*07", "B*08", "B*13", "B*14", "B*15", "B*18",
+			"B*27", "B*35", "B*37", "B*38", "B*39", "B*40",
+			"B*41", "B*44", "B*45", "B*47", "B*48", "B*49",
+			"B*50", "B*51", "B*52", "B*53", "B*55", "B*56",
+			"B*57", "B*58", "B*73", "B*78"),
+		Type = "B",
+		Freq = c(0.0808, 0.1028, 0.0399, 0.0302, 0.0472, 0.0959,
+			0.0472, 0.1125, 0.0106, 0.0408, 0.0224, 0.0445,
+			0.0191, 0.1216, 0.0057, 0.0033, 0.0015, 0.0166,
+			0.0112, 0.0684, 0.0197, 0.0036, 0.0121, 0.0067,
+			0.0254, 0.0088, 0.0006, 0.0009) ),
+	C = data.frame(
+		HLA = c(), # NO HLA-C
+		Type = "C",
+		Freq = c() ),
+	DR = data.frame(
+		HLA = c("DRB1*01", "DRB1*03", "DRB1*04", "DRB1*07", "DRB1*08",
+			"DRB1*09", "DRB1*10", "DRB1*11", "DRB1*12", "DRB1*13",
+			"DRB1*14", "DRB1*15", "DRB1*16"),
+		Type = "DR",
+		Freq = c(0.0849, 0.1245, 0.1097, 0.1145, 0.0248,
+			0.0058, 0.0090, 0.1542, 0.0204, 0.1216,
+			0.0506, 0.1062, 0.0739) )
+	);
 }
 
