@@ -42,11 +42,21 @@ trim.hla = function(x) {
 	sub("(?i)^HLA-", "", x);
 }
 
+trim.hla2A = function(x) {
+	sub("(?i)^D[PQR]A[1-5][0-9*\\:]++/", "", x, perl = TRUE);
+}
+
 # Expand NULL to zero;
-check.hla.df = function(x) {
-	if(is.null(x$A)) x$A = 0;
-	if(is.null(x$B)) x$B = 0;
-	if(is.null(x$C)) x$C = 0;
+check.hla.df = function(x, type = 1) {
+	if(type == 1) {
+		if(is.null(x$A)) x$A = 0;
+		if(is.null(x$B)) x$B = 0;
+		if(is.null(x$C)) x$C = 0;
+	} else {
+		if(is.null(x$DP)) x$DP = 0;
+		if(is.null(x$DQ)) x$DQ = 0;
+		if(is.null(x$DR)) x$DR = 0;
+	}
 	return(x);
 }
 
@@ -61,31 +71,52 @@ merge.hla = function(x, f, digits = 6) {
 	return(x);
 }
 
-freq.population = function(x, f) {
+# f = HLA Frequency;
+freq.population = function(x, f, type = 1) {
 	if(nrow(x) == 0) warning("No data!");
-	x  = merge(x[c("HLA", "Peptide")], f, by = "HLA", all.x = TRUE);
+	sq = if(is.null(x$Seq)) NULL else "Seq";
+	x  = merge(x[c("HLA", "Peptide", sq)], f, by = "HLA", all.x = TRUE);
 	isMissing = is.na(x$Freq);
-	x$Type[isMissing] = substr(x$HLA[isMissing], 1, 1);
+	LEN.HLA = if(type == 1) 1 else 2; # TODO: robust; full HLA-2?
+	x$Type[isMissing] = substr(x$HLA[isMissing], 1, LEN.HLA);
 	x$Freq[isMissing] = 0;
-	tf = tapply(x$Freq, x[c("Peptide", "Type")], sum, na.rm = TRUE);
-	pp = rownames(tf);
-	tf = data.frame(tf);
-	tf$Peptide = pp;
-	tf = check.hla.df(tf);
+	if(is.null(sq)) {
+		tf = tapply(x$Freq, x[c("Peptide", "Type")], sum, na.rm = TRUE);
+		pp = rownames(tf);
+		tf = data.frame(tf);
+		tf$Peptide = pp;
+		tf = check.hla.df(tf, type=type);
+	} else {
+		tmp = lapply(unique(x$Seq), function(idSeq) {
+			isSeq = x$Seq == idSeq;
+			tf = tapply(x$Freq[isSeq], x[isSeq, c("Peptide", "Type")], sum, na.rm = TRUE);
+			pp = rownames(tf);
+			tf = data.frame(tf);
+			tf$Peptide = pp;
+			tf = check.hla.df(tf, type=type);
+			return(tf);
+		})
+		tf = do.call(rbind, tmp);
+	}
 	#
 	asZ = function(x) {
 		isNA = is.na(x);
 		x[isNA] = 0;
 		return(x);
 	}
-	tf$A = asZ(tf$A); tf$B = asZ(tf$B); tf$C = asZ(tf$C);
+	if(type == 1) {
+		tf$A = asZ(tf$A); tf$B = asZ(tf$B); tf$C = asZ(tf$C);
+	} else {
+		tf$DP = asZ(tf$DP); tf$DQ = asZ(tf$DQ);
+		tf$DR = asZ(tf$DR);
+	}
 	return(tf);
 }
 
 ### Population Coverage
-# x   = Set of Peptides w HLA-Alleles;
+# x   = Vector of Peptides (PP repeated for each HLA-Allele);
 # hla = Frequency of HLA-Alleles;
-freq.all = function(x, hla, seqPP = NULL, digits = 6) {
+freq.all = function(x, hla, seqPP = NULL, type = 1, digits = 6) {
 	if(is.null(x)) return(NULL);
 	# Count(Alleles HLA)
 	y = data.frame(table(x));
@@ -101,9 +132,14 @@ freq.all = function(x, hla, seqPP = NULL, digits = 6) {
 		y$Seq = seqPP[id];
 	}
 	# Population Coverage:
-	yAB  = y$A + y$B;
-	y$Tn = yAB + y$C; # Total sum (naive total);
-	y$Ti = round(y$Tn - yAB*y$C + y$A*y$B*(y$C - 1), digits);
+	if(type == 1) {
+		yA = y$A; yB = y$B; yC = y$C;
+	} else {
+		yA = y$DP; yB = y$DQ; yC = y$DR;
+	}
+	yAB  = yA  + yB;
+	y$Tn = yAB + yC; # Total sum (naive total);
+	y$Ti = round(y$Tn - yAB*yC + yA*yB*(yC - 1), digits);
 	y$Tn = round(y$Tn, digits);
 	return(y);
 }

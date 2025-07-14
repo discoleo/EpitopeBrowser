@@ -165,6 +165,7 @@ hla.de = function() {
 			)
 	)
 	);
+	lst$DR3$Type = "DR"; # Hack!
 	lst$DR = rbind(lst$DR, lst$DR3);
 	return(lst);
 }

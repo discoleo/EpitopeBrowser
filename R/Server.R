@@ -11,6 +11,7 @@ server.app = function(input, output, session) {
 		hla.strip = TRUE, # HLA-A... => A...;
 		sep = ",",        # csv Separator
 		HLA = hla(type = "De"),
+		HLA.trim.2A = TRUE, # Trim: D[PQR]A*...;
 		# Regex & Other Options:
 		reg.Data  = TRUE,  # Regex for Data-Table
 		reg.PP    = TRUE,  # Regex for Epitopes-Table
@@ -51,6 +52,7 @@ server.app = function(input, output, session) {
 		fltAllele = NULL,
 		fltCols   = NULL,   # TODO
 		multSeq   = FALSE,
+		typeHLA   = 1,      # HLA Class
 		# Population Coverage:
 		dfPopCoverPP = NULL,
 		dfAllelesPP  = NULL,
@@ -80,8 +82,9 @@ server.app = function(input, output, session) {
 	reset.tab = function() {}
 	
 	freq.hla = function() {
-		x = values$dfFltData[c("Peptide", "HLA")];
-		freq.population(x, options$HLA);
+		nmSeq = if(values$multSeq) "Seq" else NULL;
+		x = values$dfFltData[c("Peptide", "HLA", nmSeq)];
+		freq.population(x, options$HLA, type = values$typeHLA);
 	}
 	
 	trim = function(x) {
@@ -150,6 +153,14 @@ server.app = function(input, output, session) {
 			hla.strip = options$hla.strip, sep = options$sep);
 		# Multiple Protein Sequences:
 		values$multSeq = if("Seq" %in% names(x)) TRUE else FALSE;
+		# HLA Class 2:
+		if(any(grepl("(?i)^D", x$HLA))) {
+			values$typeHLA = 2;
+		} else values$typeHLA = 1;
+		# NO population data
+		if(options$HLA.trim.2A) {
+			x$HLA = trim.hla2A(x$HLA);
+		}
 		#
 		values$fullData = x;
 	})
@@ -228,13 +239,16 @@ server.app = function(input, output, session) {
 			idSeq  = values$dfFltData$Seq;
 			nColTi = 9;
 		} else idSeq = NULL;
-		x = freq.all(values$dfFltData$Peptide, freq.hla(), seqPP = idSeq);
+		x = freq.all(values$dfFltData$Peptide, freq.hla(),
+			seqPP = idSeq, type = values$typeHLA);
 		values$dfPopCoverPP = x;
 		#
+		nmsCol = if(values$typeHLA ==1) c('A','B','C')
+			else c('DP', 'DQ', 'DR');
 		DT::datatable(x, filter = 'top',
 			options = option.regex(options$reg.PP,
 				varia = list(order = list(nColTi, "desc")))) |>
-		formatRound(c('A','B','C','Tn','Ti'), 4);
+		formatRound(c(nmsCol,'Tn','Ti'), 4);
 	})
 	
 	# Selected Rows:
