@@ -55,7 +55,7 @@ server.app = function(input, output, session) {
 		typeHLA   = 1,      # HLA Class
 		# Population Coverage:
 		dfPopCoverPP = NULL,
-		dfAllelesPP  = NULL,
+		dfPopAlleles = NULL, # Alleles Covered by selected Set
 		dfTotalPopulation = NULL, # HLA & Epitope
 		fltHLAEpiSel      = NULL, # Only HLA covered by Selection
 		dfRemainingEpi    = NULL,
@@ -230,7 +230,7 @@ server.app = function(input, output, session) {
 	output$tblPeptides <- DT::renderDT ({
 		# values$Active = "PP";
 		# Reset 2nd & 3rd Tables:
-		values$dfAllelesPP       = NULL;
+		values$dfPopAlleles      = NULL;
 		values$dfTotalPopulation = NULL;
 		output$txtBtnDisplay = renderText(const$DisplayHLA$Warn);
 		# Multiple Protein Sequences:
@@ -257,7 +257,7 @@ server.app = function(input, output, session) {
 		print(ids); # DEBUG
 		# NO Epitopes selected
 		if(is.null(values$dfPopCoverPP) || length(ids) == 0) {
-			values$dfAllelesPP = NULL;
+			values$dfPopAlleles  = NULL;
 			values$dfTotalPopulation = NULL;
 			values$fltHLAEpiSel  = NULL;
 			output$txtBtnDisplay = renderText(const$DisplayHLA$Warn);
@@ -268,7 +268,7 @@ server.app = function(input, output, session) {
 		x  = values$dfFltData[c("HLA", "Peptide")];
 		x  = x[x$Peptide %in% pp, ];
 		# HLA-Alleles covered:
-		values$dfAllelesPP = x;
+		values$dfPopAlleles = x;
 		# Population: Overall Coverage
 		hla = sort(unique(x$HLA));
 		xT  = freq.populationTotal(hla, options$HLA,
@@ -279,7 +279,7 @@ server.app = function(input, output, session) {
 	
 	output$tblAllelesPP = DT::renderDT(
 			# old variant: dom = "lrtip"
-			DT::datatable(values$dfAllelesPP, filter = 'top',
+			DT::datatable(values$dfPopAlleles, filter = 'top',
 				options = option.regex(options$reg.PP,
 					varia = list(dom = "tip", order = list(1, "asc"))))
 	);

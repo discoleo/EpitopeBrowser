@@ -152,8 +152,10 @@ freq.all = function(x, hla, seqPP = NULL, type = 1, digits = 6) {
 	return(y);
 }
 
+### Total Coverage
+# (for ALL Epitopes)
 # type = HLA class 1 vs class 2;
-freq.populationTotal = function(x, f, do.totals = TRUE, type = 1, digits = 6) {
+freq.populationTotal = function(x, f, type = 1, do.totals = TRUE, digits = 6) {
 	x = if(inherits(x, "data.frame")) x["HLA", drop = FALSE] else data.frame(HLA = x);
 	x = merge(x, f, by = "HLA", all.x = TRUE);
 	isMissing = is.na(x$Freq);
