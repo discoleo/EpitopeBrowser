@@ -81,10 +81,9 @@ server.app = function(input, output, session) {
 	hasData = function() { ! is.null(values$dfGlData); }
 	reset.tab = function() {}
 	
+	### Population Coverage: each Epitope
 	freq.hla = function() {
-		# TODO: revert Seq;
-		nmSeq = if(values$multSeq) "Seq" else NULL;
-		x = values$dfFltData[c("Peptide", "HLA", nmSeq)];
+		x = values$dfFltData[c("Peptide", "HLA")];
 		freq.population(x, options$HLA, type = values$typeHLA);
 	}
 	
@@ -311,13 +310,15 @@ server.app = function(input, output, session) {
 			values$dfRemainingEpi  = NULL;
 			return();
 		}
-		# TODO: was quasi-duplicated code;
+		# TODO: a lot of quasi-duplicated code;
 		nColTi = 8; # Col: Ti
 		# Multiple Protein Sequences:
 		if(values$multSeq) {
-			idSeq  = dfHLA$Seq;
+			nmsCol = c("Peptide", "HLA", "Seq");
 			nColTi = 9;
-		} else idSeq = NULL;
+		} else {
+			nmsCol = c("Peptide", "HLA");
+		}
 		# Filter:
 		flt = getFilter.tblPopCovEpi();
 		flt = list(order = list(nColTi, "desc"),
@@ -326,7 +327,8 @@ server.app = function(input, output, session) {
 		values$optRemainingEpi = option.regex(options$reg.PP, varia = flt);
 		# Data:
 		freqHLA = freq.population(dfHLA[c("Peptide", "HLA")], options$HLA);
-		x = freq.all(dfHLA$Peptide, freqHLA, seqPP = idSeq);
+		dfTmp   = dfHLA[nmsCol];
+		x = freq.all(dfTmp, freqHLA);
 		x = x[x$Ti > 0, , drop = FALSE]; # Exclude: HLA w. freq = 0;
 		# Total Coverage:
 		ids  = match(x$Peptide, values$dfPopCoverPP$Peptide);

@@ -90,27 +90,11 @@ freq.population = function(x, f, type = 1) {
 	LEN.HLA = if(type == 1) 1 else 2; # TODO: robust; full HLA-2?
 	x$Type[isMissing] = substr(x$HLA[isMissing], 1, LEN.HLA);
 	x$Freq[isMissing] = 0;
-	sq = NULL; # TODO: remove/revert;
-	if(is.null(sq)) {
-		tf = tapply(x$Freq, x[c("Peptide", "Type")], sum, na.rm = TRUE);
-		pp = rownames(tf);
-		tf = data.frame(tf);
-		tf$Peptide = pp;
-		tf = check.hla.df(tf, type=type);
-	} else {
-		# TODO: remove
-		tmp = lapply(unique(x$Seq), function(idSeq) {
-			isSeq = x$Seq == idSeq;
-			tf = tapply(x$Freq[isSeq], x[isSeq, c("Peptide", "Type")], sum, na.rm = TRUE);
-			pp = rownames(tf);
-			tf = data.frame(tf);
-			tf$Peptide = pp;
-			tf = check.hla.df(tf, type=type);
-			return(tf);
-		})
-		tf = do.call(rbind, tmp);
-	}
-	#
+	tf = tapply(x$Freq, x[c("Peptide", "Type")], sum, na.rm = TRUE);
+	pp = rownames(tf);
+	tf = data.frame(tf);
+	tf$Peptide = pp;
+	tf = check.hla.df(tf, type=type);
 	asZ = function(x) {
 		isNA = is.na(x);
 		x[isNA] = 0;
@@ -134,7 +118,8 @@ freq.all = function(x, hla, seqPP = NULL, type = 1, digits = 6) {
 	# Count(Alleles HLA)
 	isDF = inherits(x, "data.frame");
 	if(isDF) {
-		seqPP = unique(x[c("Peptide", "Seq")]);
+		noSeq = is.null(x$Seq);
+		seqPP = if(noSeq) NULL else unique(x[c("Peptide", "Seq")]);
 		x = unique(x[c("Peptide", "HLA")]);
 		x = x$Peptide;
 	}
