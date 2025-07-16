@@ -46,6 +46,14 @@ trim.hla2A = function(x) {
 	sub("(?i)^D[PQR]A[1-5][0-9*\\:]++/", "", x, perl = TRUE);
 }
 
+### Std Names
+names.hla = function(type = 1) {
+	if(type == 1) c("A", "B", "C")
+		else c("DP", "DQ", "DR");
+}
+
+### Checks & Corrections
+
 # Expand NULL to zero;
 check.hla.df = function(x, type = 1) {
 	if(type == 1) {
@@ -144,7 +152,8 @@ freq.all = function(x, hla, seqPP = NULL, type = 1, digits = 6) {
 	return(y);
 }
 
-freq.populationTotal = function(x, f, do.totals = TRUE, digits = 6) {
+# type = HLA class 1 vs class 2;
+freq.populationTotal = function(x, f, do.totals = TRUE, type = 1, digits = 6) {
 	x = if(inherits(x, "data.frame")) x["HLA", drop = FALSE] else data.frame(HLA = x);
 	x = merge(x, f, by = "HLA", all.x = TRUE);
 	isMissing = is.na(x$Freq);
@@ -155,17 +164,25 @@ freq.populationTotal = function(x, f, do.totals = TRUE, digits = 6) {
 	tf = matrix(tf, nrow = 1);
 	tf = round(tf, digits);
 	tf = data.frame(tf); names(tf) = nms;
-	tf = check.hla.df(tf);
-	tf = tf[c("A", "B", "C")];
+	tf = check.hla.df(tf, type=type);
+	tf = tf[names.hla(type)]; # Class-1 vs Class-2
 	#
 	asZ = function(x) {
 		if(is.na(x)) 0 else x;
 	}
-	tf$A = asZ(tf$A); tf$B = asZ(tf$B); tf$C = asZ(tf$C);
+	if(type == 1) {
+		tfA = asZ(tf$A); tf$A = tfA;
+		tfB = asZ(tf$B); tf$B = tfB;
+		tfC = asZ(tf$C); tf$C = tfC;
+	} else {
+		tfA = asZ(tf$DP); tf$DP = tfA;
+		tfB = asZ(tf$DQ); tf$DQ = tfB;
+		tfC = asZ(tf$DR); tf$DR = tfC;
+	}
 	if(do.totals) {
-		tfAB  = tf$A + tf$B;
-		Total = tfAB + tf$C;
-		tf$Ti = round(Total - tfAB*tf$C - tf$A*tf$B*(1 - tf$C), digits);
+		tfAB  = tfA  + tfB;
+		Total = tfAB + tfC;
+		tf$Ti = round(Total - tfAB*tfC - tfA*tfB*(1 - tfC), digits);
 		tf = cbind("Total" = "Population", tf); # "HLA" = c("Total")
 	}
 	return(tf);

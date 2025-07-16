@@ -271,7 +271,8 @@ server.app = function(input, output, session) {
 		values$dfAllelesPP = x;
 		# Population: Overall Coverage
 		hla = sort(unique(x$HLA));
-		xT  = freq.populationTotal(hla, options$HLA, digits = 3);
+		xT  = freq.populationTotal(hla, options$HLA,
+			type = values$typeHLA, digits = 3);
 		values$dfTotalPopulation = xT;
 		values$fltHLAEpiSel = hla;
 	})
