@@ -79,7 +79,6 @@ server.app = function(input, output, session) {
 	
 	# Reset Filters on Data table
 	hasData = function() { ! is.null(values$dfGlData); }
-	reset.tab = function() {}
 	
 	### Population Coverage: each Epitope
 	freq.hla = function() {
@@ -294,7 +293,7 @@ server.app = function(input, output, session) {
 					varia = list(dom = "t")))
 	);
 	
-	# HLA: Remaining Epitopes
+	# Pop Cover: Remaining HLA
 	observeEvent(input$btnRemainingEpi, {
 		if(is.null(values$dfFltData) ||
 			nrow(values$dfFltData) == 0) return();
@@ -313,38 +312,40 @@ server.app = function(input, output, session) {
 		# TODO: a lot of quasi-duplicated code;
 		nColTi = 8; # Col: Ti
 		# Multiple Protein Sequences:
+		nmsCol = cols;
 		if(values$multSeq) {
-			nmsCol = c("Peptide", "HLA", "Seq");
 			nColTi = 9;
-		} else {
-			nmsCol = c("Peptide", "HLA");
 		}
 		# Filter:
+		# https://datatables.net/reference/option/dom
 		flt = getFilter.tblPopCovEpi();
 		flt = list(order = list(nColTi, "desc"),
 			searchCols = flt, dom = "tip");
-		# https://datatables.net/reference/option/dom
 		values$optRemainingEpi = option.regex(options$reg.PP, varia = flt);
 		# Data:
-		freqHLA = freq.population(dfHLA[c("Peptide", "HLA")], options$HLA);
+		typeHLA = values$typeHLA;
+		freqHLA = freq.population(dfHLA[c("Peptide", "HLA")],
+					options$HLA, type = typeHLA);
 		dfTmp   = dfHLA[nmsCol];
-		x = freq.all(dfTmp, freqHLA);
+		x = freq.all(dfTmp, freqHLA, type = typeHLA);
 		x = x[x$Ti > 0, , drop = FALSE]; # Exclude: HLA w. freq = 0;
 		# Total Coverage:
 		ids  = match(x$Peptide, values$dfPopCoverPP$Peptide);
 		x$Tn = values$dfPopCoverPP$Ti[ids];
 		idNm = match("Tn", names(x));
-		names(x)[idNm] = "Ta";
+		names(x)[idNm] = "Ta"; # All Alleles (for Redundancy)
+		# Decreasing Order:
 		ids = order(x$Ti, x$Ta, decreasing = TRUE);
 		x   = x[ids, ];
 		values$dfRemainingEpi = x;
 	})
 	output$tblRemainingEpi = DT::renderDT({
 		if(is.null(values$dfRemainingEpi)) return(NULL);
+		nmsCol = names.hla(values$typeHLA);
 		DT::datatable(values$dfRemainingEpi,
 			filter = "top",
 			options = values$optRemainingEpi) |>
-		formatRound(c('A','B','C','Ta','Ti'), 3)
+		formatRound(c(nmsCol,'Ta','Ti'), 3);
 	})
 	
 	getFilter.tblPopCovEpi = function() {
