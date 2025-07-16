@@ -154,6 +154,8 @@ freq.all = function(x, hla, seqPP = NULL, type = 1, digits = 6) {
 
 ### Total Coverage
 # (for ALL Epitopes)
+# x = HLA Alleles;
+# f = Freq of HLA Alleles;
 # type = HLA class 1 vs class 2;
 freq.populationTotal = function(x, f, type = 1, do.totals = TRUE, digits = 6) {
 	x = if(inherits(x, "data.frame")) x["HLA", drop = FALSE] else data.frame(HLA = x);

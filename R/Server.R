@@ -251,6 +251,7 @@ server.app = function(input, output, session) {
 		formatRound(c(nmsCol,'Tn','Ti'), 4);
 	})
 	
+	### Overall Population: Cover & Alleles
 	# Selected Rows:
 	observeEvent(input$btnCovHLA, {
 		ids = input$tblPeptides_rows_selected;
@@ -264,9 +265,12 @@ server.app = function(input, output, session) {
 			return();
 		}
 		output$txtBtnDisplay = renderText(const$DisplayHLA$More);
+		# Population Cover: Selected Epitopes
 		pp = values$dfPopCoverPP[ids, "Peptide"];
+		pp = unique(pp); # Avoid duplicates
 		x  = values$dfFltData[c("HLA", "Peptide")];
 		x  = x[x$Peptide %in% pp, ];
+		x  = unique(x); # Avoid duplicates
 		# HLA-Alleles covered:
 		values$dfPopAlleles = x;
 		# Population: Overall Coverage
