@@ -79,15 +79,18 @@ merge.hla = function(x, f, digits = 6) {
 	return(x);
 }
 
+### Population Coverage: each Epitope
 # f = HLA Frequency;
 freq.population = function(x, f, type = 1) {
 	if(nrow(x) == 0) warning("No data!");
-	sq = if(is.null(x$Seq)) NULL else "Seq";
-	x  = merge(x[c("HLA", "Peptide", sq)], f, by = "HLA", all.x = TRUE);
+	x = unique(x[c("HLA", "Peptide")]);
+	x = merge(x, f, by = "HLA", all.x = TRUE);
+	# Missing Alleles:
 	isMissing = is.na(x$Freq);
 	LEN.HLA = if(type == 1) 1 else 2; # TODO: robust; full HLA-2?
 	x$Type[isMissing] = substr(x$HLA[isMissing], 1, LEN.HLA);
 	x$Freq[isMissing] = 0;
+	sq = NULL; # TODO: remove/revert;
 	if(is.null(sq)) {
 		tf = tapply(x$Freq, x[c("Peptide", "Type")], sum, na.rm = TRUE);
 		pp = rownames(tf);
@@ -95,6 +98,7 @@ freq.population = function(x, f, type = 1) {
 		tf$Peptide = pp;
 		tf = check.hla.df(tf, type=type);
 	} else {
+		# TODO: remove
 		tmp = lapply(unique(x$Seq), function(idSeq) {
 			isSeq = x$Seq == idSeq;
 			tf = tapply(x$Freq[isSeq], x[isSeq, c("Peptide", "Type")], sum, na.rm = TRUE);
@@ -123,21 +127,33 @@ freq.population = function(x, f, type = 1) {
 
 ### Population Coverage
 # x   = Vector of Peptides (PP repeated for each HLA-Allele);
-# hla = Frequency of HLA-Alleles;
+# hla = List of Epitopes w. Population Cover;
+# seqPP = Protein Seq;
 freq.all = function(x, hla, seqPP = NULL, type = 1, digits = 6) {
 	if(is.null(x)) return(NULL);
 	# Count(Alleles HLA)
+	isDF = inherits(x, "data.frame");
+	if(isDF) {
+		seqPP = unique(x[c("Peptide", "Seq")]);
+		x = unique(x[c("Peptide", "HLA")]);
+		x = x$Peptide;
+	}
 	y = data.frame(table(x));
 	names(y)[1] = "Peptide";
 	y$Peptide = as.character(y$Peptide);
 	y$Len = nchar(y$Peptide);
 	y = merge(y, hla, by = "Peptide");
+	# Add Seq-ID:
 	if(! is.null(seqPP)) {
-		if(length(x) != length(seqPP)) {
-			warning("Epitopes: Lengths do NOT match!");
+		if(isDF) {
+			y = merge(y, seqPP, by = "Peptide");
+		} else {
+			if(length(x) != length(seqPP)) {
+				warning("Epitopes: Lengths do NOT match!");
+			}
+			id = match(y$Peptide, x);
+			y$Seq = seqPP[id];
 		}
-		id = match(y$Peptide, x);
-		y$Seq = seqPP[id];
 	}
 	# Population Coverage:
 	if(type == 1) {

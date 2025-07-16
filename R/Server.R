@@ -82,6 +82,7 @@ server.app = function(input, output, session) {
 	reset.tab = function() {}
 	
 	freq.hla = function() {
+		# TODO: revert Seq;
 		nmSeq = if(values$multSeq) "Seq" else NULL;
 		x = values$dfFltData[c("Peptide", "HLA", nmSeq)];
 		freq.population(x, options$HLA, type = values$typeHLA);
@@ -236,15 +237,16 @@ server.app = function(input, output, session) {
 		# Multiple Protein Sequences:
 		nColTi = 8; # Col: Ti
 		if(values$multSeq) {
-			idSeq  = values$dfFltData$Seq;
+			nmsCol = c("Peptide", "HLA", "Seq");
 			nColTi = 9;
-		} else idSeq = NULL;
-		x = freq.all(values$dfFltData$Peptide, freq.hla(),
-			seqPP = idSeq, type = values$typeHLA);
+		} else {
+			nmsCol = c("Peptide", "HLA");
+		}
+		dfPP = values$dfFltData[nmsCol];
+		x = freq.all(dfPP, freq.hla(), type = values$typeHLA);
 		values$dfPopCoverPP = x;
 		#
-		nmsCol = if(values$typeHLA ==1) c('A','B','C')
-			else c('DP', 'DQ', 'DR');
+		nmsCol = names.hla(values$typeHLA);
 		DT::datatable(x, filter = 'top',
 			options = option.regex(options$reg.PP,
 				varia = list(order = list(nColTi, "desc")))) |>
