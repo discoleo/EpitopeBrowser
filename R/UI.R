@@ -60,6 +60,11 @@ getUI = function(versionPop = 2) {
 						selected = "All"),
 					checkboxInput("chkRegex", "Regex Search: Data", value = TRUE),
 					downloadButton("downloadData", "Download"),
+					# Filter: AA Position
+					fluidRow(
+					column(6, textInput("fltSeqStart", "Start", "", width = 150)),
+					column(6, textInput("fltSeqEnd", "End", "", width = 150))
+					),
 				),
 				mainPanel(DT::DTOutput("tblData"))
 		)),

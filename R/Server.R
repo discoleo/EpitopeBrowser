@@ -51,6 +51,7 @@ server.app = function(input, output, session) {
 		fltRank   = NULL,   # is set automatically
 		fltAllele = NULL,
 		fltCols   = NULL,   # TODO
+		fltSeqPos = NULL,   # AA-Position in Seq
 		multSeq   = FALSE,
 		typeHLA   = 1,      # HLA Class
 		# Population Coverage:
@@ -97,9 +98,32 @@ server.app = function(input, output, session) {
 		x = values$fullData;
 		x = x[x$Rank <= lim.rank, ];
 		x = filter.HLA(x, fltAllele);
+		if(! is.null(values$fltSeqPos)) x = filter.seqPos(x);
 		#
 		values$dfGlData = x;
 		cat("Rows: ", nrow(x), "\n");
+	}
+	filter.seqPos = function(x) {
+		flt  = values$fltSeqPos;
+		fltS = flt$Start;
+		fltE = flt$End;
+		isS = ! is.null(fltS);
+		isE = ! is.null(fltE);
+		isSeq = rep(TRUE, nrow(x));
+		# Note: Initial names;
+		if(isS) {
+			isSeq = (x$start >= fltS[1]);
+			if(length(fltS) > 1)
+				isSeq = isSeq & (x$start <= fltS[2]);
+		}
+		if(isE) {
+			isLim1 = length(fltE) == 1;
+			isSeq  = isSeq &
+				if(isLim1) (x$end <= fltE[1])
+				else ((x$end >= fltE[1]) & (x$end <= fltE[2]));
+		}
+		x = x[isSeq, ];
+		return(x);
 	}
 	filter.HLA = function(x, fltAllele) {
 		if(fltAllele == "All") return(x);
@@ -183,6 +207,52 @@ server.app = function(input, output, session) {
 		if(values$reg.Data != isReg) {
 			values$reg.Data = isReg;
 		}
+	})
+	
+	### Flt: AA-Position
+	observeEvent(input$fltSeqStart, {
+		txt = input$fltSeqStart;
+		if(nchar(txt) == 0) {
+			if(is.null(values$fltSeqPos)) return();
+			limE = values$fltSeqPos$End;
+			if(is.null(limE)) {
+				values$fltSeqPos = NULL;
+			} else {
+				values$fltSeqPos$Start = NULL;
+			}
+			filter.df();
+			return();
+		}
+		# Values:
+		val = splitRange(txt);
+		if(length(val) == 0) {
+			cat("Invalid Start position!\n");
+			return();
+		}
+		values$fltSeqPos$Start = val;
+		filter.df();
+	})
+	observeEvent(input$fltSeqEnd, {
+		txt = input$fltSeqEnd;
+		if(nchar(txt) == 0) {
+			if(is.null(values$fltSeqPos)) return();
+			limS = values$fltSeqPos$Start;
+			if(is.null(limS)) {
+				values$fltSeqPos = NULL;
+			} else {
+				values$fltSeqPos$End = NULL;
+			}
+			filter.df();
+			return();
+		}
+		# Values:
+		val = splitRange(txt);
+		if(length(val) == 0) {
+			cat("Invalid End position!\n");
+			return();
+		}
+		values$fltSeqPos$End = val;
+		filter.df();
 	})
 	
 	### Tbl Filter
@@ -312,7 +382,6 @@ server.app = function(input, output, session) {
 		# TODO: a lot of quasi-duplicated code;
 		nColTi = 8; # Col: Ti
 		# Multiple Protein Sequences:
-		nmsCol = cols;
 		if(values$multSeq) {
 			nColTi = 9;
 		}
@@ -326,6 +395,7 @@ server.app = function(input, output, session) {
 		typeHLA = values$typeHLA;
 		freqHLA = freq.population(dfHLA[c("Peptide", "HLA")],
 					options$HLA, type = typeHLA);
+		nmsCol  = cols;
 		dfTmp   = dfHLA[nmsCol];
 		x = freq.all(dfTmp, freqHLA, type = typeHLA);
 		x = x[x$Ti > 0, , drop = FALSE]; # Exclude: HLA w. freq = 0;

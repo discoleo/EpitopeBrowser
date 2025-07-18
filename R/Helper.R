@@ -2,6 +2,16 @@
 
 ### Basic Functions
 
+### Strings
+
+### Text => Values of Range
+splitRange = function(x) {
+	txt = strsplit(x, "[-, /]+")[[1]];
+	val = round(as.numeric(txt));
+	val = val[! is.na(val)];
+	return(val);
+}
+
 ### Read Epitopes
 # sep = separator used in the csv file;
 read.epi = function(file, hla.strip = TRUE, sep = ",") {
