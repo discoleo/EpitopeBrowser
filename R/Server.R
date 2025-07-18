@@ -96,7 +96,8 @@ server.app = function(input, output, session) {
 		lim.rank  = values$fltRank;
 		fltAllele = values$fltAllele;
 		x = values$fullData;
-		x = x[x$Rank <= lim.rank, ];
+		# Trick: lim = 0 => accept ALL Ranks;
+		if(lim.rank > 0) x = x[x$Rank <= lim.rank, ];
 		x = filter.HLA(x, fltAllele);
 		if(! is.null(values$fltSeqPos)) x = filter.seqPos(x);
 		#
