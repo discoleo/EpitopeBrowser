@@ -10,7 +10,7 @@ server.app = function(input, output, session) {
 		fltRank   = 0.55, # Default value for Rank-Filter;
 		hla.strip = TRUE, # HLA-A... => A...;
 		sep = ",",        # csv Separator
-		HLA = hla(type = "De"),
+		hla.region  = "De",
 		HLA.trim.2A = TRUE, # Trim: D[PQR]A*...;
 		# Regex & Other Options:
 		reg.Data  = TRUE,  # Regex for Data-Table
@@ -40,13 +40,17 @@ server.app = function(input, output, session) {
 	
 	### Init:
 	updateNumericInput(session, "rank", value = options$fltRank);
+	updateSelectInput(session, "fltAlleleRegion", selected = options$hla.region);
 	
 	# Dynamic variable
 	values = reactiveValues(
 		Active    = "Not",  # Active Tab
+		dfHLA     = NULL,   # HLA Set: is initialized based on Option;
+		# Data:
 		fullData  = NULL,   # initial Data
 		dfGlData  = NULL,   # Globally filtered Data
 		dfFltData = NULL,   # Data filtered in Table
+		# Filters:
 		reg.Data  = options$reg.Data,
 		fltRank   = NULL,   # is set automatically
 		fltAllele = NULL,
@@ -70,6 +74,7 @@ server.app = function(input, output, session) {
 	
 	
 	### Menu Tabs
+	# Not used!
 	observeEvent(input$menu.top, {
 		if(input$menu.top != "Data") {
 			print("Switched");
@@ -84,7 +89,7 @@ server.app = function(input, output, session) {
 	### Population Coverage: each Epitope
 	freq.hla = function() {
 		x = values$dfFltData[c("Peptide", "HLA")];
-		freq.population(x, options$HLA, type = values$typeHLA);
+		freq.population(x, values$dfHLA, type = values$typeHLA);
 	}
 	
 	trim = function(x) {
@@ -98,7 +103,8 @@ server.app = function(input, output, session) {
 		x = values$fullData;
 		# Trick: lim = 0 => accept ALL Ranks;
 		if(lim.rank > 0) x = x[x$Rank <= lim.rank, ];
-		x = filter.HLA(x, fltAllele);
+		x = filter.HLA(x, fltAllele,
+			dfHLA = values$dfHLA, hla.strip = options$hla.strip);
 		if(! is.null(values$fltSeqPos)) x = filter.seqPos(x);
 		#
 		values$dfGlData = x;
@@ -124,27 +130,6 @@ server.app = function(input, output, session) {
 				else ((x$end >= fltE[1]) & (x$end <= fltE[2]));
 		}
 		x = x[isSeq, ];
-		return(x);
-	}
-	filter.HLA = function(x, fltAllele) {
-		if(fltAllele == "All") return(x);
-		#
-		hla = if(options$hla.strip) x$HLA else trim(x$HLA);
-		if(fltAllele == ">= 3%") {
-			frequentHLA = options$HLA$HLA[options$HLA$Freq >= 0.03];
-			isHLA = hla %in% frequentHLA;
-		} else if(fltAllele == ">= 1%") {
-			frequentHLA = options$HLA$HLA[options$HLA$Freq >= 0.01];
-			isHLA = hla %in% frequentHLA;
-		} else if(fltAllele == "< 1%") {
-			frequentHLA = options$HLA$HLA[options$HLA$Freq < 0.01];
-			isHLA = hla %in% frequentHLA;
-		} else {
-			isHLA = hla %in% options$HLA$HLA;
-			if(fltAllele == "Uncommon") isHLA = ! isHLA;
-		}
-		# print("HLA"); print(head(options$HLA))
-		x = x[isHLA, ];
 		return(x);
 	}
 	# Table Filter:
@@ -198,6 +183,12 @@ server.app = function(input, output, session) {
 		values$fltRank = input$rank;
 		filter.df();
 	})
+	### HLA Set:
+	observeEvent(input$fltAlleleRegion, {
+		regionHLA    = input$fltAlleleRegion;
+		values$dfHLA = hla(regionHLA);
+	})
+	# Filter HLA Alleles
 	observeEvent(input$fltAllele, {
 		if(! is.null(values$fltAllele) && input$fltAllele == values$fltAllele) return();
 		values$fltAllele = input$fltAllele;
@@ -290,7 +281,7 @@ server.app = function(input, output, session) {
 		x = values$dfFltData$HLA;
 		x = data.frame(table(x));
 		names(x)[1] = "HLA";
-		x = merge.hla(x, options$HLA);
+		x = merge.hla(x, values$dfHLA);
 		DT::datatable(x, filter = 'top') |>
 			formatRound('Population (%)', 2);
 	})
@@ -346,7 +337,7 @@ server.app = function(input, output, session) {
 		values$dfPopAlleles = x;
 		# Population: Overall Coverage
 		hla = sort(unique(x$HLA));
-		xT  = freq.populationTotal(hla, options$HLA,
+		xT  = freq.populationTotal(hla, values$dfHLA,
 			type = values$typeHLA, digits = 3);
 		values$dfTotalPopulation = xT;
 		values$fltHLAEpiSel = hla;
@@ -395,7 +386,7 @@ server.app = function(input, output, session) {
 		# Data:
 		typeHLA = values$typeHLA;
 		freqHLA = freq.population(dfHLA[c("Peptide", "HLA")],
-					options$HLA, type = typeHLA);
+					values$dfHLA, type = typeHLA);
 		nmsCol  = cols;
 		dfTmp   = dfHLA[nmsCol];
 		x = freq.all(dfTmp, freqHLA, type = typeHLA);

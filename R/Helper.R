@@ -62,6 +62,31 @@ names.hla = function(type = 1) {
 		else c("DP", "DQ", "DR");
 }
 
+### FIlter HLA Alleles
+# dfHLA = Set of HLA Alleles w. Frequencies;
+filter.HLA = function(x, fltAllele, dfHLA, hla.strip = TRUE) {
+	if(fltAllele == "All") return(x);
+	# Data with HLA:
+	hla = if(hla.strip) x$HLA else trim.hla(x$HLA);
+	if(fltAllele == ">= 3%") {
+		frequentHLA = dfHLA$HLA[dfHLA$Freq >= 0.03];
+		isHLA = hla %in% frequentHLA;
+	} else if(fltAllele == ">= 1%") {
+		frequentHLA = dfHLA$HLA[dfHLA$Freq >= 0.01];
+		isHLA = hla %in% frequentHLA;
+	} else if(fltAllele == "< 1%") {
+		frequentHLA = dfHLA$HLA[dfHLA$Freq < 0.01];
+		isHLA = hla %in% frequentHLA;
+	} else {
+		isHLA = hla %in% dfHLA$HLA;
+		if(fltAllele == "Uncommon") isHLA = ! isHLA;
+	}
+	# print("HLA"); print(head(dfHLA))
+	x = x[isHLA, ];
+	return(x);
+}
+
+
 ### Checks & Corrections
 
 # Expand NULL to zero;

@@ -65,6 +65,14 @@ getUI = function(versionPop = 2) {
 					column(6, textInput("fltSeqStart", "Start", "", width = 150)),
 					column(6, textInput("fltSeqEnd", "End", "", width = 150))
 					),
+					# HLA Alleles: Region
+					selectInput("fltAlleleRegion",
+						label = "HLA Set:",
+						choices = list("Germany" = "De", "Italy" = "Italy",
+							"Mix" = "Mix", "Hungary" = "Hungary",
+							"Ro (Fundeni)" = "Ro (Fundeni)",
+							"Not yet" = "Not yet"),
+						selected = "Germany"),
 				),
 				mainPanel(DT::DTOutput("tblData"))
 		)),
