@@ -27,7 +27,7 @@
 
 
 #' @export
-hla = function(type = c("Mix", "De", "Italy", "Hungary")) {
+hla = function(type = c("Mix", "De", "Italy", "Hungary", "Ro-Fundeni")) {
 	type = match.arg(type);
 	if(type == 'Mix') {
 		lst = hla.mix();
@@ -38,6 +38,9 @@ hla = function(type = c("Mix", "De", "Italy", "Hungary")) {
 	} else if(type == 'Hungary') {
 		# TODO: NOT yet functional (1-Level HLA code);
 		lst = hla.hungary();
+	} else if(type == 'Ro-Fundeni') {
+		# Note: small dataset;
+		lst = hla.ro.Fundeni();
 	}
 	lst = rbind(lst$A, lst$B, lst$C, lst$DP, lst$DQ, lst$DR);
 	return(lst);

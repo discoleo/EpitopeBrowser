@@ -39,7 +39,7 @@ server.app = function(input, output, session) {
 	);
 	
 	### Init:
-	updateNumericInput(session, "rank", value = options$fltRank);
+	updateNumericInput(session, "fltRank", value = options$fltRank);
 	updateSelectInput(session, "fltAlleleRegion", selected = options$hla.region);
 	
 	# Dynamic variable
@@ -178,9 +178,9 @@ server.app = function(input, output, session) {
 	observeEvent(values$fullData, {
 		filter.df();
 	})
-	observeEvent(input$rank, {
-		if(! is.null(values$fltRank) && input$rank == values$fltRank) return();
-		values$fltRank = input$rank;
+	observeEvent(input$fltRank, {
+		if(! is.null(values$fltRank) && input$fltRank == values$fltRank) return();
+		values$fltRank = input$fltRank;
 		filter.df();
 	})
 	### HLA Set:

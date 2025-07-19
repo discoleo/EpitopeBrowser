@@ -50,14 +50,8 @@ getUI = function(versionPop = 2) {
 				sidebarPanel(
 					titlePanel("Load file"),
 					fileInput.csv("file", "Select CSV file"),
-					sliderInput(inputId = "rank", label = "Rank",
+					sliderInput(inputId = "fltRank", label = "Rank",
 						value = 0.2, min = 0, max = 5, step = 0.25),
-					selectInput("fltAllele",
-						label = "Filter alleles:",
-						choices = list("All" = "All", "Common / Known" = "Common",
-							">= 3%" = ">= 3%", ">= 1%" = ">= 1%",
-							"Uncommon (< 1%)" = "< 1%", "Uncommon (NA)" = "Uncommon"),
-						selected = "All"),
 					checkboxInput("chkRegex", "Regex Search: Data", value = TRUE),
 					downloadButton("downloadData", "Download"),
 					# Filter: AA Position
@@ -66,13 +60,11 @@ getUI = function(versionPop = 2) {
 					column(6, textInput("fltSeqEnd", "End", "", width = 150))
 					),
 					# HLA Alleles: Region
-					selectInput("fltAlleleRegion",
-						label = "HLA Set:",
-						choices = list("Germany" = "De", "Italy" = "Italy",
-							"Mix" = "Mix", "Hungary" = "Hungary",
-							"Ro (Fundeni)" = "Ro (Fundeni)",
-							"Not yet" = "Not yet"),
-						selected = "Germany"),
+					inputHLARegion(),
+					inputHLAFreq(),
+					fluidRow("HLA: Frequency-data extracted from",
+						"various Regions of interest."
+					),
 				),
 				mainPanel(DT::DTOutput("tblData"))
 		)),
@@ -253,4 +245,26 @@ getUI.PopCover.old = function() {
 		column(12, DT::DTOutput("tblRemainingEpi"))
 	)
 	);
+}
+
+### Input: Allele Region
+inputHLARegion = function() {
+	selectInput("fltAlleleRegion",
+		label = "HLA Set:",
+		choices = list(
+			"Germany" = "De", "Italy" = "Italy",
+			"Mix" = "Mix", "Hungary" = "Hungary",
+			"Ro (Fundeni)" = "Ro-Fundeni",
+			"Not yet" = "Not yet"),
+		selected = "Germany");
+}
+
+### Input: Allele Freq-Filter
+inputHLAFreq = function() {
+	selectInput("fltAllele",
+		label = "Filter alleles:",
+		choices = list("All" = "All", "Common / Known" = "Common",
+					">= 3%" = ">= 3%", ">= 1%" = ">= 1%",
+					"Uncommon (< 1%)" = "< 1%", "Uncommon (NA)" = "Uncommon"),
+		selected = "All");
 }
