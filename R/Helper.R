@@ -244,8 +244,11 @@ merge.RegionsHLA = function() {
 	x$HLA.L1 = sub("\\:[0-9]++$", "", x$HLA, perl = TRUE);
 	y = hla("Hungary")[, nms];
 	y = y[! is.na(y$HLA), ];
+	# Exclude Level 2:
+	y = y[! grepl("\\:[0-9]++$", y$HLA, perl = TRUE), ];
 	names(y) = c("HLA.L1", sfx[3]);
 	x = merge(x, y, by = "HLA.L1", all = TRUE);
+	print(str(x))
 	return(x);
 }
 
