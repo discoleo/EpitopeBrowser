@@ -11,16 +11,6 @@ init.theme = function() {
 }
 
 
-fileInput.csv = function(id, label) {
-	shiny::fileInput(id, label,
-		multiple = FALSE,
-		accept = c(
-			"text/csv",
-			"text/comma-separated-values,text/plain",
-			".csv", ".txt")
-    );
-}
-
 
 # version = 1: Old variant;
 getUI = function(versionPop = 2) {
@@ -105,17 +95,32 @@ getUI = function(versionPop = 2) {
 			column(12, DT::DTOutput("tblEpiSummary"))
 			)
 		),
+		# Regions: Compare HLA Freq
+		tabPanel("Regions", # icon = icon("Regions"),
+			fluidRow(DT::DTOutput("tblRegionsHLA"))
+		),
+		# View Epitopes on Protein
 		tabPanel("Protein", # icon = icon("Protein"),
-				plotOutput("imgProtein")
+			plotOutput("imgProtein")
 		),
 		tabPanel("Help", # icon = icon("Help"),
-				uiOutput("txtHelp")
+			uiOutput("txtHelp")
 		)
 	)))
 }
 
 #######################
 
+# Input: File Open
+fileInput.csv = function(id, label) {
+	shiny::fileInput(id, label,
+		multiple = FALSE,
+		accept = c(
+			"text/csv",
+			"text/comma-separated-values,text/plain",
+			".csv", ".txt")
+    );
+}
 
 ### Input: Allele Region
 inputHLARegion = function() {

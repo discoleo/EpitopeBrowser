@@ -301,9 +301,9 @@ hla.hungary = function() {
 			0.0112, 0.0684, 0.0197, 0.0036, 0.0121, 0.0067,
 			0.0254, 0.0088, 0.0006, 0.0009) ),
 	C = data.frame(
-		HLA = c(), # NO HLA-C
+		HLA = c(NA), # NO HLA-C
 		Type = "C",
-		Freq = c() ),
+		Freq = c(NA) ),
 	DR = data.frame(
 		HLA = c("DRB1*01", "DRB1*03", "DRB1*04", "DRB1*07", "DRB1*08",
 			"DRB1*09", "DRB1*10", "DRB1*11", "DRB1*12", "DRB1*13",

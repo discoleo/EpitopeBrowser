@@ -576,7 +576,16 @@ server.app = function(input, output, session) {
 		# TODO: summary
 		output$tblEpiSummary = renderDT(
 			DT::datatable(dat, filter = 'top',
-				options = option.regex(options$reg.PP)));
+				options = option.regex(options$reg.PP))) |>
+		formatRound(c('Freq.De','Freq.It','Freq.Hu'), 3);
+	})
+	
+	### HLA Regions
+	
+	output$tblRegionsHLA = renderDT({
+		tbl = merge.RegionsHLA();
+		DT::datatable(tbl, filter = 'top',
+			options = option.regex(options$reg.PP));
 	})
 	
 	### Protein Graph

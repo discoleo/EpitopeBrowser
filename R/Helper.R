@@ -230,6 +230,27 @@ freq.populationTotal = function(x, f, type = 1, do.totals = TRUE, digits = 6) {
 
 ####################
 
+### HLA Regions
+
+merge.RegionsHLA = function() {
+	nms = c("HLA", "Freq");
+	sfx = paste0("Freq.", c("De", "It", "Hu"));
+	x = hla("De");
+	y = hla("Italy")[, nms];
+	names(x)[3] = sfx[1];
+	names(y)[2] = sfx[2];
+	x = merge(x, y, by = "HLA", all = TRUE);
+	# Level 1:
+	x$HLA.L1 = sub("\\:[0-9]++$", "", x$HLA, perl = TRUE);
+	y = hla("Hungary")[, nms];
+	y = y[! is.na(y$HLA), ];
+	names(y) = c("HLA.L1", sfx[3]);
+	x = merge(x, y, by = "HLA.L1", all = TRUE);
+	return(x);
+}
+
+####################
+
 ### Sub-Seq
 
 #@@ Search for Epitopes in a given peptide
