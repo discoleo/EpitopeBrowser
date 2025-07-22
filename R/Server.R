@@ -275,7 +275,8 @@ server.app = function(input, output, session) {
 	
 	output$tblData = DT::renderDT(dataTable())
 	
-	# HLA Alleles
+	### HLA Alleles
+	
 	output$tblAlleles <- DT::renderDT ({
 		# values$Active = "Alleles";
 		x = values$dfFltData$HLA;
@@ -485,6 +486,30 @@ server.app = function(input, output, session) {
 			write.csv(x, file, row.names = FALSE);
 		}
 	)
+	
+	### Epitope Data: Basic Stats
+	observeEvent(input$btnDataStats, {
+		x = values$dfGlData;
+		if(is.null(x)) {
+			output$txtDataStats = NULL;
+			print("Stats: No data");
+			return();
+		}
+		# Init dfFltData:
+		filter.byTable();
+		x = values$dfFltData;
+		tbl = table(x$Len);
+		nms = names(tbl);
+		tbl = cbind("Count:", matrix(format(tbl), nrow = 1));
+		tbl = as.data.frame(tbl);
+		names(tbl) = c("Length:", nms);
+		txt = "<p>&nbsp;</p><h2>Stats:</h2>\n";
+		output$txtDataStats = renderText(HTML(txt));
+		output$tblDataStats = DT::renderDT(DT::datatable(
+				tbl, rownames = FALSE,
+				options = option.regex(options$reg.PP,
+					varia = list(dom = "t"))));
+	})
 	
 	# Download Epitopes:
 	output$btnDownloadPP <- downloadHandler(

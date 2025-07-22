@@ -44,6 +44,7 @@ getUI = function(versionPop = 2) {
 						value = 0.2, min = 0, max = 5, step = 0.25),
 					checkboxInput("chkRegex", "Regex Search: Data", value = TRUE),
 					downloadButton("downloadData", "Download"),
+					actionButton("btnDataStats", "Stats"),
 					# Filter: AA Position
 					fluidRow(
 					column(6, textInput("fltSeqStart", "Start", "", width = 150)),
@@ -56,7 +57,12 @@ getUI = function(versionPop = 2) {
 						"various Regions of interest."
 					),
 				),
-				mainPanel(DT::DTOutput("tblData"))
+				mainPanel(
+				fluidRow(DT::DTOutput("tblData")),
+				# Stats:
+				fluidRow(htmlOutput("txtDataStats")),
+				fluidRow(DT::DTOutput("tblDataStats")),
+				)
 		)),
 		### HLA Alleles
 		tabPanel("Alleles", # icon = icon("HLA"),
