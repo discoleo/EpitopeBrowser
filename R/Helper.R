@@ -12,6 +12,21 @@ splitRange = function(x) {
 	return(val);
 }
 
+table.length = function(x, hasMultiSeq, unique = TRUE) {
+	colSeq = if(hasMultiSeq) "Seq" else NULL;
+	x = x[, c("Peptide", colSeq, "start", "Len")];
+	# Count each epitope only once;
+	if(unique) {
+		x = unique(x);
+	}
+	tbl = table(x$Len);
+	nms = names(tbl);
+	tbl = cbind("Count:", matrix(format(tbl), nrow = 1));
+	tbl = as.data.frame(tbl);
+	names(tbl) = c("Length:", nms);
+	return(tbl);
+}
+
 ### Read Epitopes
 # sep = separator used in the csv file;
 read.epi = function(file, hla.strip = TRUE, sep = ",") {

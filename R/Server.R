@@ -497,13 +497,8 @@ server.app = function(input, output, session) {
 		}
 		# Init dfFltData:
 		filter.byTable();
-		x = values$dfFltData[, c("Peptide", "Seq", "start", "Len")];
-		x = unique(x); # Count each epitope only once;
-		tbl = table(x$Len);
-		nms = names(tbl);
-		tbl = cbind("Count:", matrix(format(tbl), nrow = 1));
-		tbl = as.data.frame(tbl);
-		names(tbl) = c("Length:", nms);
+		x = values$dfFltData;
+		tbl = table.length(x, values$multSeq);
 		txt = "<p>&nbsp;</p><h2>Stats:</h2>\n";
 		output$txtDataStats = renderText(HTML(txt));
 		output$tblDataStats = DT::renderDT(DT::datatable(
