@@ -497,7 +497,8 @@ server.app = function(input, output, session) {
 		}
 		# Init dfFltData:
 		filter.byTable();
-		x = values$dfFltData;
+		x = values$dfFltData[, c("Peptide", "Seq", "start", "Len")];
+		x = unique(x); # Count each epitope only once;
 		tbl = table(x$Len);
 		nms = names(tbl);
 		tbl = cbind("Count:", matrix(format(tbl), nrow = 1));
