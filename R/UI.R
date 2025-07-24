@@ -97,9 +97,10 @@ getUI = function(versionPop = 2) {
 				actionButton("btnEpiSummary", "Summary"),
 				textOutput("txtBtnEpiSummary"))
 			),
+			fluidRow(DT::DTOutput("tblEpiSummaryUnique")),
 			fluidRow(
 			column(12, DT::DTOutput("tblEpiSummary"))
-			)
+			),
 		),
 		# Regions: Compare HLA Freq
 		tabPanel("Regions", # icon = icon("Regions"),

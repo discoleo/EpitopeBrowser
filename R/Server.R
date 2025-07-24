@@ -18,7 +18,7 @@ server.app = function(input, output, session) {
 		highlight = TRUE,  # Highlight Search Term
 		# Sub-Seq:
 		allEpi.SubSeq = TRUE,
-		allEpi.EpiSummary = TRUE,
+		allEpi.EpiSummary = FALSE,
 		# Protein Graph:
 		col.Pr    = "#FF0032A0",
 		border.Pr = "#640000A0",
@@ -587,14 +587,23 @@ server.app = function(input, output, session) {
 		# Process the entire Data set:
 		dat = if(options$allEpi.EpiSummary) values$fullData else values$dfFltData;
 		isRow = dat$Peptide %in% txt;
-		dat = dat[isRow, ];
+		dat   = dat[isRow, ];
 		if(nrow(dat) == 0) {
 			output$tblEpiSummary  = NULL;
 			values$warnEpiSummary = TRUE;
 			return();
 		}
 		values$warnEpiSummary = FALSE;
-		# TODO: summary
+		# Summary:
+		typeHLA  = values$typeHLA;
+		datStats = freq.hlaMerge(dat, values$dfHLA,
+			multiSeq = values$multSeq, type = typeHLA, probs = c(0, 0.5, 1));
+		nmsQ = c(names.quant(datStats), names.hlaFreq(typeHLA));
+		output$tblEpiSummaryUnique = renderDT(
+			DT::datatable(datStats, filter = 'top',
+				options = option.regex(options$reg.PP)) |>
+			formatRound(nmsQ, 3) );
+		# All Epitopes:
 		output$tblEpiSummary = renderDT(
 			DT::datatable(dat, filter = 'top',
 				options = option.regex(options$reg.PP)));

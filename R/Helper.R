@@ -76,6 +76,9 @@ names.hla = function(type = 1) {
 	if(type == 1) c("A", "B", "C")
 		else c("DP", "DQ", "DR");
 }
+names.hlaFreq = function(type = 1) {
+	c(names.hla(type=type), "Tn", "Ti");
+}
 
 ### FIlter HLA Alleles
 # dfHLA = Set of HLA Alleles w. Frequencies;
@@ -127,6 +130,19 @@ merge.hla = function(x, f, digits = 6) {
 	names(f)[2] = "Population (%)"
 	x = merge(x, f, by = "HLA", all.x = TRUE);
 	return(x);
+}
+
+
+### Frequency: in 1 Step
+# hla  = df with HLA-Frequencies;
+# type = Type of HLA;
+freq.hlaMerge = function(x, hla, multiSeq, type = 1, probs = c(0, 0.5, 1)) {
+	colSeq   = if(multiSeq) "Seq" else NULL;
+	datFreq  = freq.population(x, hla, type = type);
+	datFreq  = freq.all(x[c("Peptide", "HLA", colSeq)], datFreq, type = type);
+	datFreq$Len = NULL;
+	datStats = summary.epi(x, multiSeq, probs = probs);
+	datStats = merge(datStats, datFreq, by = c("Peptide", colSeq));
 }
 
 ### Population Coverage: each Epitope
@@ -268,3 +284,28 @@ merge.RegionsHLA = function() {
 }
 
 ####################
+
+names.quant = function(x) {
+	names(x)[grepl("^Rq", names(x))];
+}
+
+summary.epi = function(x, isMultiSeq = NULL, probs = c(0, 0.5, 1)) {
+	if(is.null(isMultiSeq)) {
+		isMultiSeq = match("Seq", names(x));
+		isMultiSeq = ! is.na(isMultiSeq);
+	}
+	# Unique Set:
+	datUnq   = unique(x[c("Peptide", "Seq")]);
+	datStats = tapply(x$Rank, x$Peptide, function(x) {
+		as.data.frame(as.list(quantile(x, probs = probs)));
+	});
+	pp = names(datStats);
+	datStats = do.call(rbind, datStats);
+	names(datStats)  = paste0("Rq", format(probs));
+	datStats$Peptide = pp;
+	rownames(datStats) = NULL;
+	#
+	datUnq$Len = nchar(datUnq$Peptide);
+	datStats   = merge(datUnq, datStats, by = "Peptide");
+	return(datStats);
+}
