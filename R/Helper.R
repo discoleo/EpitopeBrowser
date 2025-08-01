@@ -259,6 +259,37 @@ freq.populationTotal = function(x, f, type = 1, do.totals = TRUE, digits = 6) {
 	return(tf);
 }
 
+### Frequency: Exact
+
+# Note:
+# - does NOT account for linkage disequilibrium;
+# - computes properly for Diploid genome;
+
+### 2 Loci: 2 Alleles
+# p1 = Frequency of specific allele at Locus 1;
+# p2 = Frequency of (another) specific allele at Locus 2;
+freq.loc2a2 = function(p1, p2) {
+	p10 = 1 - p1; p1m = p1*p10;
+	p20 = 1 - p2; p2m = p2*p20;
+	p = p1^2 + p2^2 - p1^2*p2^2 + 4*p1m*p2m + 2*p1m*p20^2 + 2*p2m*p10^2;
+	return(p);
+}
+
+### 2 Loci: Variable Alleles
+# Last allele: considered 0;
+# TODO: think more thoroughly the 0 case;
+freq.loc2an = function(p1, p2) {
+	n1 = length(p1);
+	n2 = length(p2);
+	g  = expand.grid(seq(p1), seq(p1), seq(p2), seq(p2));
+	last = nrow(g);
+	g = g[- last, ]; # Case: 0;
+	tmp = apply(g, 1, \(id) {
+		prod(c(p1[id[1:2]], p2[id[3:4]]));
+	});
+	sum(tmp);
+}
+
 ####################
 
 ### HLA Regions
