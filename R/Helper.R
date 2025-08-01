@@ -214,7 +214,9 @@ freq.all = function(x, hla, seqPP = NULL, type = 1, digits = 6) {
 	}
 	yAB  = yA  + yB;
 	y$Tn = yAB + yC; # Total sum (naive total);
-	y$Ti = round(y$Tn - yAB*yC + yA*yB*(yC - 1), digits);
+	# y$Ti = y$Tn - yAB*yC + yA*yB*(yC - 1); # [old]
+	y$Ti = 1 - (1-yA)*(1-yB)*(1-yC);
+	y$Ti = round(y$Ti, digits);
 	y$Tn = round(y$Tn, digits);
 	return(y);
 }
@@ -251,9 +253,11 @@ freq.populationTotal = function(x, f, type = 1, do.totals = TRUE, digits = 6) {
 		tfC = asZ(tf$DR); tf$DR = tfC;
 	}
 	if(do.totals) {
-		tfAB  = tfA  + tfB;
-		Total = tfAB + tfC;
-		tf$Ti = round(Total - tfAB*tfC - tfA*tfB*(1 - tfC), digits);
+		# [old]
+		# tfAB  = tfA  + tfB;
+		# Total = tfAB + tfC;
+		# tf$Ti = round(Total - tfAB*tfC - tfA*tfB*(1 - tfC), digits);
+		tf$Ti = round(1 - (1-tfA)*(1-tfB)*(1-tfC), digits);
 		tf = cbind("Total" = "Population", tf); # "HLA" = c("Total")
 	}
 	return(tf);
