@@ -295,11 +295,12 @@ server.app = function(input, output, session) {
 		values$dfPopAlleles      = NULL;
 		values$dfTotalPopulation = NULL;
 		output$txtBtnDisplay = renderText(const$DisplayHLA$Warn);
+		# Col: Ti
+		nColTi = if(values$typeHLA == 1) 8 else 9;
 		# Multiple Protein Sequences:
-		nColTi = 8; # Col: Ti
 		if(values$multSeq) {
 			nmsCol = c("Peptide", "HLA", "Seq");
-			nColTi = 9;
+			nColTi = nColTi + 1;
 		} else {
 			nmsCol = c("Peptide", "HLA");
 		}
@@ -373,10 +374,11 @@ server.app = function(input, output, session) {
 			return();
 		}
 		# TODO: a lot of quasi-duplicated code;
-		nColTi = 8; # Col: Ti
+		# Col: Ti
+		nColTi = if(values$typeHLA == 1) 8 else 9;
 		# Multiple Protein Sequences:
 		if(values$multSeq) {
-			nColTi = 9;
+			nColTi = nColTi + 1;
 		}
 		# Filter:
 		# https://datatables.net/reference/option/dom

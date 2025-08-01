@@ -74,7 +74,7 @@ trim.hla2A = function(x) {
 ### Std Names
 names.hla = function(type = 1) {
 	if(type == 1) c("A", "B", "C")
-		else c("DP", "DQ", "DR");
+		else c("DP", "DQ", "DR", "DR3");
 }
 names.hlaFreq = function(type = 1) {
 	c(names.hla(type=type), "Tn", "Ti");
@@ -117,6 +117,7 @@ check.hla.df = function(x, type = 1) {
 		if(is.null(x$DP)) x$DP = 0;
 		if(is.null(x$DQ)) x$DQ = 0;
 		if(is.null(x$DR)) x$DR = 0;
+		if(is.null(x$DR3)) x$DR3 = 0;
 	}
 	return(x);
 }
@@ -153,7 +154,8 @@ freq.population = function(x, f, type = 1) {
 	x = merge(x, f, by = "HLA", all.x = TRUE);
 	# Missing Alleles:
 	isMissing = is.na(x$Freq);
-	LEN.HLA = if(type == 1) 1 else 2; # TODO: robust; full HLA-2?
+	# TODO: robust; full HLA-2?
+	LEN.HLA = if(type == 1) 1 else 2;
 	x$Type[isMissing] = substr(x$HLA[isMissing], 1, LEN.HLA);
 	x$Freq[isMissing] = 0;
 	tf = tapply(x$Freq, x[c("Peptide", "Type")], sum, na.rm = TRUE);
@@ -171,6 +173,7 @@ freq.population = function(x, f, type = 1) {
 	} else {
 		tf$DP = asZ(tf$DP); tf$DQ = asZ(tf$DQ);
 		tf$DR = asZ(tf$DR);
+		tf$DR3 = asZ(tf$DR3);
 	}
 	return(tf);
 }
@@ -207,15 +210,17 @@ freq.all = function(x, hla, seqPP = NULL, type = 1, digits = 6) {
 		}
 	}
 	# Population Coverage:
+	yDR3 = 0;
 	if(type == 1) {
 		yA = y$A; yB = y$B; yC = y$C;
 	} else {
 		yA = y$DP; yB = y$DQ; yC = y$DR;
+		yDR3 = y$DR3;
 	}
 	yAB  = yA  + yB;
-	y$Tn = yAB + yC; # Total sum (naive total);
+	y$Tn = yAB + yC + yDR3; # Total sum (naive total);
 	# y$Ti = y$Tn - yAB*yC + yA*yB*(yC - 1); # [old]
-	y$Ti = 1 - (1-yA)*(1-yB)*(1-yC);
+	y$Ti = 1 - (1-yA)*(1-yB)*(1-yC)*(1-yDR3);
 	y$Ti = round(y$Ti, digits);
 	y$Tn = round(y$Tn, digits);
 	return(y);
@@ -243,6 +248,7 @@ freq.populationTotal = function(x, f, type = 1, do.totals = TRUE, digits = 6) {
 	asZ = function(x) {
 		if(is.na(x)) 0 else x;
 	}
+	tfDR3 = 0;
 	if(type == 1) {
 		tfA = asZ(tf$A); tf$A = tfA;
 		tfB = asZ(tf$B); tf$B = tfB;
@@ -251,13 +257,14 @@ freq.populationTotal = function(x, f, type = 1, do.totals = TRUE, digits = 6) {
 		tfA = asZ(tf$DP); tf$DP = tfA;
 		tfB = asZ(tf$DQ); tf$DQ = tfB;
 		tfC = asZ(tf$DR); tf$DR = tfC;
+		tfDR3 = asZ(tf$DR3); tf$DR3 = tfDR3;
 	}
 	if(do.totals) {
 		# [old]
 		# tfAB  = tfA  + tfB;
 		# Total = tfAB + tfC;
 		# tf$Ti = round(Total - tfAB*tfC - tfA*tfB*(1 - tfC), digits);
-		tf$Ti = round(1 - (1-tfA)*(1-tfB)*(1-tfC), digits);
+		tf$Ti = round(1 - (1-tfA)*(1-tfB)*(1-tfC)*(1-tfDR3), digits);
 		tf = cbind("Total" = "Population", tf); # "HLA" = c("Total")
 	}
 	return(tf);

@@ -42,7 +42,8 @@ hla = function(type = c("Mix", "De", "Italy", "Hungary", "Ro-Fundeni")) {
 		# Note: small dataset;
 		lst = hla.ro.Fundeni();
 	}
-	lst = rbind(lst$A, lst$B, lst$C, lst$DP, lst$DQ, lst$DR);
+	lst = rbind(lst$A, lst$B, lst$C, lst$DP, lst$DQ,
+		lst$DR, lst$DR3);
 	return(lst);
 }
 
@@ -198,8 +199,8 @@ hla.de = function() {
 			)
 	)
 	);
-	lst$DR3$Type = "DR"; # Hack!
-	lst$DR = rbind(lst$DR, lst$DR3);
+	# lst$DR3$Type = "DR"; # Hack!
+	# lst$DR = rbind(lst$DR, lst$DR3);
 	return(lst);
 }
 
