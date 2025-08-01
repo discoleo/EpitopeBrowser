@@ -280,7 +280,13 @@ freq.loc2a2 = function(p1, p2) {
 ### 2 Loci: Variable Alleles
 # Last allele: considered 0;
 # TODO: think more thoroughly the 0 case;
-freq.loc2an = function(p1, p2) {
+freq.loc2any = function(p1, p2) {
+	n1 = length(p1); n2 = length(p2);
+	p  = 1 - p1[n1]^2 * p2[n2]^2;
+	return(p);
+}
+freq.loc2any.old = function(p1, p2) {
+	# Step by step computation;
 	n1 = length(p1);
 	n2 = length(p2);
 	g  = expand.grid(seq(p1), seq(p1), seq(p2), seq(p2));
