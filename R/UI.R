@@ -91,12 +91,15 @@ getUI = function(versionPop = 2) {
 		tabPanel("EpiSummary", # icon = icon("Summary"),
 			fluidRow(
 			column(4, # Epitopes which will be summarized
-				textInput("inEpiSummary", "Epitopes", value = "")
+				textInput("inEpiSummary", "Epitopes", value = "", width = "90%")
 			),
-			column(4,
+			column(6,
+				fluidRow(
 				actionButton("btnEpiSummary", "Summary"),
-				textOutput("txtBtnEpiSummary"))
-			),
+				actionButton("btnEpiSummaryPrint", "Print"),
+				),
+				fluidRow(textOutput("txtBtnEpiSummary"))
+			) ),
 			fluidRow(DT::DTOutput("tblEpiSummaryUnique")),
 			fluidRow(
 			column(12, DT::DTOutput("tblEpiSummary"))

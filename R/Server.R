@@ -69,7 +69,9 @@ server.app = function(input, output, session) {
 		# Sub-Sequences:
 		warnSubSeq = FALSE,
 		warnEpiSummary = FALSE,
-		pI.Type = "Bjellqvist",
+		# Stats:
+		dfEpiStats = NULL,      # Stats: Epitopes
+		pI.Type = "Bjellqvist", # Algorithm/pKa for pI;
 		NULLARG = NULL
 	);
 	
@@ -606,15 +608,26 @@ server.app = function(input, output, session) {
 			datStats$pI = pI(datStats$Peptide, type = values$pI.Type);
 			nmsQ = c(nmsQ, "pI");
 		}
+		attr(datStats, "nmsNum") = nmsQ;
+		values$dfEpiStats = datStats;
 		#
-		output$tblEpiSummaryUnique = renderDT(
-			DT::datatable(datStats, filter = 'top',
-				options = option.regex(options$reg.PP)) |>
-			formatRound(nmsQ, 3) );
 		# All Epitopes:
 		output$tblEpiSummary = renderDT(
 			DT::datatable(dat, filter = 'top',
 				options = option.regex(options$reg.PP)));
+	})
+	
+	output$tblEpiSummaryUnique = renderDT({
+		dfStats = values$dfEpiStats;
+		if(is.null(dfStats)) return();
+		nmsNum = attr(dfStats, "nmsNum");
+		DT::datatable(dfStats, filter = 'top',
+			options = option.regex(options$reg.PP)) |>
+		formatRound(nmsNum, 3);
+	});
+	
+	observeEvent(input$btnEpiSummaryPrint, {
+		# TODO
 	})
 	
 	### HLA Regions
