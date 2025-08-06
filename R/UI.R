@@ -97,6 +97,7 @@ getUI = function(versionPop = 2) {
 				fluidRow(
 				actionButton("btnEpiSummary", "Summary"),
 				actionButton("btnEpiSummaryPrint", "Print"),
+				downloadButton("downloadEpiSummary", "Download"),
 				),
 				fluidRow(textOutput("txtBtnEpiSummary"))
 			) ),

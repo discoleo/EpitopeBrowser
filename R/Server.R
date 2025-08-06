@@ -646,6 +646,18 @@ server.app = function(input, output, session) {
 		));
 	})
 	
+	### Save Data
+	output$downloadEpiSummary = downloadHandler(
+		filename = function() {
+			paste("EpiSummary", ".csv", sep = "");
+		},
+		content = function(file) {
+			x = values$dfEpiStats;
+			if(is.null(x)) return(NULL);
+			write.csv(x, file, row.names = FALSE);
+		}
+	)
+	
 	### HLA Regions
 	
 	output$tblRegionsHLA = renderDT({
