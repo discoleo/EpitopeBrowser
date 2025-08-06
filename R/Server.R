@@ -69,6 +69,7 @@ server.app = function(input, output, session) {
 		# Sub-Sequences:
 		warnSubSeq = FALSE,
 		warnEpiSummary = FALSE,
+		pI.Type = "Bjellqvist",
 		NULLARG = NULL
 	);
 	
@@ -601,6 +602,11 @@ server.app = function(input, output, session) {
 		datStats = freq.hlaMerge(dat, values$dfHLA,
 			multiSeq = values$multSeq, type = typeHLA, probs = c(0, 0.5, 1));
 		nmsQ = c(names.quant(datStats), names.hlaFreq(typeHLA));
+		if(! is.null(values$pI.Type)) {
+			datStats$pI = pI(datStats$Peptide, type = values$pI.Type);
+			nmsQ = c(nmsQ, "pI");
+		}
+		#
 		output$tblEpiSummaryUnique = renderDT(
 			DT::datatable(datStats, filter = 'top',
 				options = option.regex(options$reg.PP)) |>

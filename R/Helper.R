@@ -350,7 +350,10 @@ summary.epi = function(x, isMultiSeq = NULL, probs = c(0, 0.5, 1)) {
 		isMultiSeq = ! is.na(isMultiSeq);
 	}
 	# Unique Set:
-	datUnq   = unique(x[c("Peptide", "Seq")]);
+	colNms = if(isMultiSeq) "Seq" else NULL;
+	colNms = c("Peptide", colNms);
+	datUnq   = unique(x[colNms]);
+	# Stats:
 	datStats = tapply(x$Rank, x$Peptide, function(x) {
 		as.data.frame(as.list(quantile(x, probs = probs)));
 	});
