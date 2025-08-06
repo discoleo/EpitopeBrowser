@@ -627,7 +627,23 @@ server.app = function(input, output, session) {
 	});
 	
 	observeEvent(input$btnEpiSummaryPrint, {
-		# TODO
+		x = values$dfEpiStats;
+		if(is.null(x)) return();
+		nms = attr(x, "nmsNum");
+		if(values$multSeq) {
+			txt = paste0(x$Peptide, ": ", x$Seq, ", ");
+		} else {
+			txt = paste0(x$Peptide, ": ");
+		}
+		txt = paste0(txt,
+			round(x[, nms[1]], 2), ", ",
+			round(x$Ti * 100, 2), ", ",
+			round(x$pI, 2), ";", collapse = "\n");
+		#
+		showModal(modalDialog(
+			title = "Stats", txt,
+			easyClose = TRUE, footer = NULL
+		));
 	})
 	
 	### HLA Regions
