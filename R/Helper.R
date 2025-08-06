@@ -123,12 +123,17 @@ check.hla.df = function(x, type = 1) {
 }
 
 ### Tbl HLA Alleles
-merge.hla = function(x, f, digits = 6) {
+# y = frequency of individual HLA alleles;
+#' @export
+merge.hla = function(x, y, digits = 6) {
 	if(nrow(x) == 0) warning("No data!");
-	idHLA = match(c("HLA", "Freq"), names(f));
-	f = f[, idHLA];
-	f[, 2] = round(f[, 2] * 100, digits = digits);
-	names(f)[2] = "Population (%)"
+	idHLA = match(c("HLA", "Freq"), names(y));
+	f = y[, idHLA];
+	# Round:
+	if(! is.null(digits)) {
+		f[, 2] = round(f[, 2] * 100, digits = digits);
+		names(f)[2] = "Population (%)";
+	} else names(f)[2] = "Population (pr)";
 	x = merge(x, f, by = "HLA", all.x = TRUE);
 	return(x);
 }
@@ -313,10 +318,10 @@ freq.loc2any.old = function(p1, p2) {
 
 ### HLA Regions
 
-merge.RegionsHLA = function() {
+merge.RegionsHLA = function(x = 'De') {
 	nms = c("HLA", "Freq");
-	sfx = paste0("Freq.", c("De", "It", "Hu"));
-	x = hla("De");
+	sfx = paste0("Freq.", c(x, "It", "Hu"));
+	x = hla(x);
 	y = hla("Italy")[, nms];
 	names(x)[3] = sfx[1];
 	names(y)[2] = sfx[2];

@@ -59,6 +59,85 @@ pI = function(x, type = c("EMBOSS", "Bjellqvist", "Dawson",
 }
 
 
+### Electric Charge at given pH
+
+#' @export
+charge = function(pH, x, type = c("EMBOSS", "Bjellqvist", "Dawson",
+		"Lehninger", "Murray"), verbose = FALSE) {
+	type = match.arg(type);
+	pKa  = aa.pK(type);
+	if(is.character(pH)) {
+		stop("Did you permute the pH and the peptide sequence?");
+	}
+	chrg = absoluteCharge.default(x, pH=pH, type = pKa);
+	return(chrg);
+}
+
+
+
+# Note:
+# - was initially a Low level function;
+#' @export
+absoluteCharge = function(x, pH, type) {
+	UseMethod("absoluteCharge");
+}
+
+# x = String with AA-sequence;
+# type = data.frame with pKa values or
+#        string name of pKa data-set;
+#' @export
+absoluteCharge.default = function(x, pH, type) {
+	if(is.character(type)) {
+		type = match.pK_Names(type);
+		pKa  = aa.pK(type);
+	} else pKa = type;
+	AAs = pKa$AA;
+	LEN = length(AAs);
+	AAa = AAs[- c(LEN-1, LEN)];
+	#
+	chrg = sapply(as.seqAA(x), function(x) {
+		x = as.tblAA(x, AAs = AAa);
+		absoluteCharge.tblAA(x, pH = pH, pKa = pKa);
+	});
+	return(chrg);
+}
+
+# x = Frequency table of charged AAs;
+#' @export
+absoluteCharge.tblAA = function(x, pH, pKa) {
+	charge = aaCharge(pH, pKa);
+	charge = sum(charge * x);
+	return(charge);
+}
+
+aaCharge = function(pH, pKa) {
+	div = 1.0 + 10^(pKa$charges * (pH - pKa$pK));
+	charge = pKa$charges / div;
+}
+
+### Frequency table of AAs:
+#' @export
+as.tblAA = function(x, AAs = c("C", "D", "E", "H", "K", "R", "Y")) {
+	if(inherits(x, "tblAA")) return(x);
+	fAA = table(x);
+	ids = match(AAs, names(fAA));
+	fAA = ifelse(is.na(ids), 0, fAA[ids]);
+	fAA = c(fAA, 1, 1); # add: ('c', 'n')
+	names(fAA) = c(AAs, "c", "n");
+	class(fAA) = c("tblAA", class(x));
+	return(fAA);
+}
+
+### Convert string to seq of AAs:
+#' @export
+as.seqAA = function(x) {
+	if(inherits(x, "seqAA")) return(x);
+	x = strsplit(x, "", fixed = TRUE);
+	class(x) = c("seqAA", class(x));
+	return(x);
+}
+
+
 ### pKa of Amino-Acids
 #' @export
 aa.pK = function(pKscale = NULL) {
@@ -89,5 +168,11 @@ aa.pK = function(pKscale = NULL) {
 	if(is.null(pKscale)) return(pKa);
 	lst = cbind(pKa[[pKscale]], charges = pKa$charges);
 	return(lst);
+}
+match.pK_Names = function(x) {
+	nms = c("EMBOSS", "Bjellqvist", "Dawson",
+		"Lehninger", "Murray");
+	id = pmatch(x, nms);
+	nms[id];
 }
 
