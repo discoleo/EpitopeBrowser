@@ -75,6 +75,12 @@ server.app = function(input, output, session) {
 		NULLARG = NULL
 	);
 	
+	divText = function(x, title = NULL) {
+		txt = c(title, x);
+		txt = lapply(txt, p);
+		txt = div(txt);
+		return(txt);
+	}
 	
 	### Menu Tabs
 	# Not used!
@@ -632,13 +638,17 @@ server.app = function(input, output, session) {
 		nms = attr(x, "nmsNum");
 		if(values$multSeq) {
 			txt = paste0(x$Peptide, ": ", x$Seq, ", ");
+			sSq = "Seq, ";
 		} else {
 			txt = paste0(x$Peptide, ": ");
+			sSq = NULL;
 		}
+		tx0 = paste0("Peptide: ", sSq, "Rank, Cover (%), pI");
 		txt = paste0(txt,
 			round(x[, nms[1]], 2), ", ",
 			round(x$Ti * 100, 2), ", ",
-			round(x$pI, 2), ";", collapse = "\n");
+			round(x$pI, 2), ";");
+		txt = divText(txt, title = tx0);
 		#
 		showModal(modalDialog(
 			title = "Stats", txt,
