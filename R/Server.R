@@ -298,8 +298,10 @@ server.app = function(input, output, session) {
 	
 	### Epitopes: Population Coverage
 	
+	### All Epitopes
 	output$tblPeptides <- DT::renderDT ({
 		# values$Active = "PP";
+		if(is.null(values$dfFltData)) return();
 		# Reset 2nd & 3rd Tables:
 		values$dfPopAlleles      = NULL;
 		values$dfTotalPopulation = NULL;
@@ -314,7 +316,7 @@ server.app = function(input, output, session) {
 			nmsCol = c("Peptide", "HLA");
 		}
 		dfPP = values$dfFltData[nmsCol];
-		x = freq.all(dfPP, freq.hla(), type = values$typeHLA);
+		x    = freq.all(dfPP, freq.hla(), type = values$typeHLA);
 		values$dfPopCoverPP = x;
 		#
 		nmsCol = names.hla(values$typeHLA);
@@ -341,6 +343,9 @@ server.app = function(input, output, session) {
 		# Population Cover: Selected Epitopes
 		pp = values$dfPopCoverPP[ids, "Peptide"];
 		pp = unique(pp); # Avoid duplicates
+		setPopCoverSelected(pp);
+	})
+	setPopCoverSelected = function(pp) {
 		x  = values$dfFltData[c("HLA", "Peptide")];
 		x  = x[x$Peptide %in% pp, ];
 		x  = unique(x); # Avoid duplicates
@@ -352,7 +357,23 @@ server.app = function(input, output, session) {
 			type = values$typeHLA, digits = 3);
 		values$dfTotalPopulation = xT;
 		values$fltHLAEpiSel = hla;
-	})
+	}
+	selectEpiPopCover = function(pp) {
+		x   = values$dfPopCoverPP;
+		if(is.null(x)) return();
+		cat("Pop cover: Selecting Rows!", sep = "\n");
+		pp  = unique(pp);
+		ids = which(x$Peptide %in% pp);
+		if(length(ids) == 0) {
+			cat("No epitopes found!", sep = "\n");
+			return();
+		}
+		# Select Rows:
+		proxy = dataTableProxy('tblPeptides');
+		selectRows(proxy, ids);
+		# values$dfPopAlleles = pp;
+		setPopCoverSelected(pp);
+	}
 	
 	output$tblAllelesPP = DT::renderDT(
 			# old variant: dom = "lrtip"
@@ -590,6 +611,7 @@ server.app = function(input, output, session) {
 		}
 	});
 	
+	# Import List of Epitopes
 	observeEvent(input$btnEpiSummary, {
 		if(is.null(values$fullData)) return();
 		txt = input$inEpiSummary;
@@ -605,6 +627,10 @@ server.app = function(input, output, session) {
 			return();
 		}
 		values$warnEpiSummary = FALSE;
+		# Save as Epitope Selection
+		pp = dat$Peptide;
+		selectEpiPopCover(pp);
+		# values$dfPopAlleles = pp;
 		# Summary:
 		typeHLA  = values$typeHLA;
 		datStats = freq.hlaMerge(dat, values$dfHLA,
