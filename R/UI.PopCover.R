@@ -44,6 +44,7 @@ getUI.PopCover.v2 = function() {
 			fluidRow(
 				textOutput("txtBtnDisplay"),
 				actionButton("btnCovHLA", "Display HLA"),
+				actionButton("btnCovClear", "Clear"),
 			),
 			fluidRow(h3("Remaining Epitopes:")),
 			fluidRow(
@@ -84,6 +85,7 @@ getUI.PopCover.v1 = function() {
 			fluidRow(
 				textOutput("txtBtnDisplay"),
 				actionButton("btnCovHLA", "Display HLA"),
+				actionButton("btnCovClear", "Clear"),
 			),
 			fluidRow(h3("Remaining Epitopes:")),
 			fluidRow(

@@ -374,6 +374,18 @@ server.app = function(input, output, session) {
 		# values$dfPopAlleles = pp;
 		setPopCoverSelected(pp);
 	}
+	# Clear Selection:
+	clearPopCover = function() {
+		values$dfPopAlleles = NULL;
+		values$fltHLAEpiSel = NULL;
+		values$dfTotalPopulation = NULL;
+	}
+	observeEvent(input$btnCovClear, {
+		clearPopCover();
+		# De-Select ALL Rows:
+		proxy = dataTableProxy('tblPeptides');
+		selectRows(proxy, numeric(0));
+	})
 	
 	output$tblAllelesPP = DT::renderDT(
 			# old variant: dom = "lrtip"
