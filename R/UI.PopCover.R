@@ -44,6 +44,7 @@ getUI.PopCover.v2 = function() {
 			fluidRow(
 				textOutput("txtBtnDisplay"),
 				actionButton("btnCovHLA", "Display HLA"),
+				actionButton("btnCovPages", "Pages?"),
 				actionButton("btnCovClear", "Clear"),
 			),
 			fluidRow(h3("Remaining Epitopes:")),
@@ -51,7 +52,8 @@ getUI.PopCover.v2 = function() {
 				actionButton("btnRemainingEpi", "Remaining"),
 				actionButton("btnGoToPage", "Go To"),
 			),
-			fluidRow(textOutput("txtPPTblPage"))
+			fluidRow(textOutput("txtPPTblPage")),
+			fluidRow(textOutput("txtPopCover_SelPages")),
 			))
 		)),
 	fluidRow(
@@ -85,6 +87,7 @@ getUI.PopCover.v1 = function() {
 			fluidRow(
 				textOutput("txtBtnDisplay"),
 				actionButton("btnCovHLA", "Display HLA"),
+				actionButton("btnCovPages", "Pages?"),
 				actionButton("btnCovClear", "Clear"),
 			),
 			fluidRow(h3("Remaining Epitopes:")),
@@ -93,6 +96,7 @@ getUI.PopCover.v1 = function() {
 				actionButton("btnGoToPage", "Go To"),
 			),
 			fluidRow(textOutput("txtPPTblPage")),
+			fluidRow(textOutput("txtPopCover_SelPages")),
 		),
 		column(9,
 			fluidRow(DT::DTOutput("tblPeptides"))

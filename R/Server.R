@@ -65,7 +65,8 @@ server.app = function(input, output, session) {
 		fltHLAEpiSel      = NULL, # Only HLA covered by Selection
 		dfRemainingEpi    = NULL,
 		optRemainingEpi   = list(), # Options/Filters for the table
-		pageTblPP    = NULL,      # Page in main PopCoverage Table
+		pageTblPP     = NULL,     # Page in main PopCoverage Table
+		pgSelPopCover = NULL,     # Pages with Selected Epitopes
 		# Sub-Sequences:
 		warnSubSeq = FALSE,
 		warnEpiSummary = FALSE,
@@ -329,10 +330,9 @@ server.app = function(input, output, session) {
 	### Overall Population: Cover & Alleles
 	# Selected Rows:
 	observeEvent(input$btnCovHLA, {
-		ids = input$tblPeptides_rows_selected;
-		print(ids); # DEBUG
+		pp = getPopCoverSelected();
 		# NO Epitopes selected
-		if(is.null(values$dfPopCoverPP) || length(ids) == 0) {
+		if(is.null(pp)) {
 			values$dfPopAlleles  = NULL;
 			values$dfTotalPopulation = NULL;
 			values$fltHLAEpiSel  = NULL;
@@ -340,11 +340,17 @@ server.app = function(input, output, session) {
 			return();
 		}
 		output$txtBtnDisplay = renderText(const$DisplayHLA$More);
+		setPopCoverSelected(pp);
+	})
+	getPopCoverSelected = function(verbose = TRUE) {
+		ids = input$tblPeptides_rows_selected;
+		if(verbose) print(ids); # DEBUG
+		if(is.null(values$dfPopCoverPP) || length(ids) == 0) return();
 		# Population Cover: Selected Epitopes
 		pp = values$dfPopCoverPP[ids, "Peptide"];
 		pp = unique(pp); # Avoid duplicates
-		setPopCoverSelected(pp);
-	})
+		return(pp);
+	}
 	setPopCoverSelected = function(pp) {
 		x  = values$dfFltData[c("HLA", "Peptide")];
 		x  = x[x$Peptide %in% pp, ];
@@ -386,6 +392,36 @@ server.app = function(input, output, session) {
 		proxy = dataTableProxy('tblPeptides');
 		selectRows(proxy, numeric(0));
 	})
+	
+	# Selected Epitopes: Which Pages?
+	output$txtPopCover_SelPages = renderText({
+		pg = values$pgSelPopCover;
+		if(is.null(pg) || length(pg) == 0) {
+			"No epitopes selected!";
+		} else {
+			pg = paste0(pg, collapse = ", ");
+			pg = paste0("Selected epitopes on pages: ", pg);
+		}
+	})
+	observeEvent(input$btnCovPages, {
+		ids = input$tblPeptides_rows_selected;
+		if(is.null(ids) || length(ids) == 0) {
+			values$pgSelPopCover = NULL;
+			return();
+		}
+		pp = getPopCoverSelected();
+		pg = getPagesPopCover(pp);
+		cat("Pages: "); print(pg); # TODO
+		values$pgSelPopCover = pg;
+	})
+	getPagesPopCover = function(pp) {
+		if(length(pp) == 0) return();
+		ide = input$tblPeptides_rows_all;
+		tbl = values$dfPopCoverPP$Peptide[ide];
+		idR = match(pp, tbl);
+		pg  = (idR - 1) %/% 10 + 1; # TODO: Items per page;
+		return(pg);
+	}
 	
 	output$tblAllelesPP = DT::renderDT(
 			# old variant: dom = "lrtip"
