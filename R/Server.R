@@ -585,6 +585,22 @@ server.app = function(input, output, session) {
 				tbl, rownames = FALSE,
 				options = option.regex(options$reg.PP,
 					varia = list(dom = "t"))));
+		#
+		if(! values$multSeq) {
+			output$tblDataStatsSeq = NULL;
+			return();
+		}
+		xx = unique(x[, c("Peptide", "Seq")]);
+		tblSeq = aggregate(Peptide ~ Seq, data = xx, length);
+		nmsSeq = tblSeq[,1];
+		tblSeq = matrix(as.character(tblSeq[,2]), nrow=1);
+		colnames(tblSeq) = nmsSeq;
+		tblSeq = as.data.frame(tblSeq);
+		tblSeq = cbind(Seq = "Count", tblSeq);
+		output$tblDataStatsSeq = DT::renderDT(DT::datatable(
+				tblSeq, rownames = FALSE,
+				options = option.regex(options$reg.PP,
+					varia = list(dom = "t"))));
 	})
 	
 	# Download Epitopes:

@@ -62,6 +62,7 @@ getUI = function(versionPop = 2) {
 				# Stats:
 				fluidRow(htmlOutput("txtDataStats")),
 				fluidRow(DT::DTOutput("tblDataStats")),
+				fluidRow(DT::DTOutput("tblDataStatsSeq")),
 				)
 		)),
 		### HLA Alleles
