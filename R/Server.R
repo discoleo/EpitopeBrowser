@@ -56,7 +56,7 @@ server.app = function(input, output, session) {
 		fltAllele = NULL,
 		fltCols   = NULL,   # TODO
 		fltSeqPos = NULL,   # AA-Position in Seq
-		multSeq   = FALSE,
+		multiSeq  = FALSE,
 		typeHLA   = 1,      # HLA Class
 		# Population Coverage:
 		dfPopCoverPP = NULL,
@@ -171,7 +171,7 @@ server.app = function(input, output, session) {
 		x = read.epi(file1$datapath,
 			hla.strip = options$hla.strip, sep = options$sep);
 		# Multiple Protein Sequences:
-		values$multSeq = if("Seq" %in% names(x)) TRUE else FALSE;
+		values$multiSeq = if("Seq" %in% names(x)) TRUE else FALSE;
 		# HLA Class 2:
 		if(any(grepl("(?i)^D", x$HLA))) {
 			values$typeHLA = 2;
@@ -310,7 +310,7 @@ server.app = function(input, output, session) {
 		# Col: Ti
 		nColTi = if(values$typeHLA == 1) 8 else 9;
 		# Multiple Protein Sequences:
-		if(values$multSeq) {
+		if(values$multiSeq) {
 			nmsCol = c("Peptide", "HLA", "Seq");
 			nColTi = nColTi + 1;
 		} else {
@@ -442,7 +442,7 @@ server.app = function(input, output, session) {
 		values$pageTblPP = NULL;
 		isHLA = values$dfFltData$HLA %in% values$fltHLAEpiSel;
 		print(values$fltHLAEpiSel); # Debug
-		cols  = if(values$multSeq) "Seq" else character(0);
+		cols  = if(values$multiSeq) "Seq" else character(0);
 		cols  = c("Peptide", "HLA", cols);
 		dfHLA = values$dfFltData[! isHLA, cols, drop = FALSE];
 		if(nrow(dfHLA) == 0) {
@@ -455,7 +455,7 @@ server.app = function(input, output, session) {
 		# Col: Ti
 		nColTi = if(values$typeHLA == 1) 8 else 9;
 		# Multiple Protein Sequences:
-		if(values$multSeq) {
+		if(values$multiSeq) {
 			nColTi = nColTi + 1;
 		}
 		# Filter:
@@ -493,7 +493,7 @@ server.app = function(input, output, session) {
 	
 	getFilter.tblPopCovEpi = function() {
 		flt   = input$tblPeptides_search_columns;
-		nms   = if(values$multSeq) c("Len", "Seq") else "Len";
+		nms   = if(values$multiSeq) c("Len", "Seq") else "Len";
 		idCol = match(nms, names(values$dfPopCoverPP));
 		flt   = flt[idCol];
 		if(all(flt == "")) {
@@ -578,7 +578,7 @@ server.app = function(input, output, session) {
 		# Init dfFltData:
 		filter.byTable();
 		x = values$dfFltData;
-		tbl = table.length(x, values$multSeq);
+		tbl = table.length(x, values$multiSeq);
 		txt = "<p>&nbsp;</p><h2>Stats:</h2>\n";
 		output$txtDataStats = renderText(HTML(txt));
 		output$tblDataStats = DT::renderDT(DT::datatable(
@@ -586,7 +586,7 @@ server.app = function(input, output, session) {
 				options = option.regex(options$reg.PP,
 					varia = list(dom = "t"))));
 		#
-		if(! values$multSeq) {
+		if(! values$multiSeq) {
 			output$tblDataStatsSeq = NULL;
 			return();
 		}
@@ -698,7 +698,7 @@ server.app = function(input, output, session) {
 		# Summary:
 		typeHLA  = values$typeHLA;
 		datStats = freq.hlaMerge(dat, values$dfHLA,
-			multiSeq = values$multSeq, type = typeHLA, probs = c(0, 0.5, 1));
+			multiSeq = values$multiSeq, type = typeHLA, probs = c(0, 0.5, 1));
 		nmsQ = c(names.quant(datStats), names.hlaFreq(typeHLA));
 		if(! is.null(values$pI.Type)) {
 			datStats$pI = pI(datStats$Peptide, type = values$pI.Type);
@@ -726,7 +726,7 @@ server.app = function(input, output, session) {
 		x = values$dfEpiStats;
 		if(is.null(x)) return();
 		nms = attr(x, "nmsNum");
-		if(values$multSeq) {
+		if(values$multiSeq) {
 			txt = paste0(x$Peptide, ": ", x$Seq, ", ");
 			sSq = "Seq, ";
 		} else {
@@ -770,14 +770,38 @@ server.app = function(input, output, session) {
 	### Protein Graph
 	
 	output$imgProtein <- renderPlot({
-		nS = unique(values$dfFltData$start);
+		isMultiSeq = values$multiSeq;
+		if(isMultiSeq) {
+			idSeq = unique(values$dfFltData$Seq);
+			idSeq = sort(idSeq, decreasing = TRUE);
+			nSeq  = length(idSeq);
+			Seq1  = values$dfFltData$Seq == idSeq[1];
+			nSEp  = unique(values$dfFltData$start[Seq1]);
+		} else {
+			nSeq = 1;
+			nSEp = unique(values$dfFltData$start);
+		}
+		lims = c(0, max(values$dfFltData$end));
 		plot.new();
-		plot.window(xlim = range(nS), ylim = c(0, 2));
-		for(npos in nS) {
+		plot.window(xlim = lims, ylim = c(0, 2*nSeq));
+		for(npos in nSEp) {
 			# lines(c(npos, npos), c(1,2), col = options$col.Pr, lwd = options$lwd.Pr);
 			polygon(npos + c(-0.5, 0.5, 0.5, -0.5), c(1,1,2,2),
 				col = options$col.Pr, border = options$border.Pr);
 		}
+		# Multiple Sequences:
+		if(! isMultiSeq) {
+			return();
+		}
+		for(id in seq_along(idSeq[-1])) {
+			iSeq = values$dfFltData$Seq == idSeq[id + 1];
+			nSEp = unique(values$dfFltData$start[iSeq]);
+			for(npos in nSEp) {
+				polygon(npos + c(-0.5, 0.5, 0.5, -0.5), c(1,1,2,2) + 2*id,
+					col = options$col.Pr, border = options$border.Pr);
+			}
+		}
+		axis(side = 2, at = 2*seq_along(idSeq) - 0.5, labels = idSeq, las = 2);
 	})
 	
 	### Help
