@@ -45,6 +45,7 @@ getUI = function(versionPop = 2) {
 					checkboxInput("chkRegex", "Regex Search: Data", value = TRUE),
 					downloadButton("downloadData", "Download"),
 					actionButton("btnDataStats", "Stats"),
+					actionButton("btnDataFltPos", "Start/End"), # Filter: Start/End-Position
 					# Filter: AA Position
 					fluidRow(
 					column(6, textInput("fltSeqStart", "Start", "", width = 150)),

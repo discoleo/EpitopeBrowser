@@ -212,6 +212,10 @@ server.app = function(input, output, session) {
 	})
 	
 	### Flt: AA-Position
+	observeEvent(input$btnDataFltPos, {
+		filter.df();
+		return();
+	})
 	observeEvent(input$fltSeqStart, {
 		txt = input$fltSeqStart;
 		if(nchar(txt) == 0) {
@@ -222,7 +226,6 @@ server.app = function(input, output, session) {
 			} else {
 				values$fltSeqPos$Start = NULL;
 			}
-			filter.df();
 			return();
 		}
 		# Values:
@@ -232,7 +235,6 @@ server.app = function(input, output, session) {
 			return();
 		}
 		values$fltSeqPos$Start = val;
-		filter.df();
 	})
 	observeEvent(input$fltSeqEnd, {
 		txt = input$fltSeqEnd;
@@ -244,7 +246,6 @@ server.app = function(input, output, session) {
 			} else {
 				values$fltSeqPos$End = NULL;
 			}
-			filter.df();
 			return();
 		}
 		# Values:
@@ -254,7 +255,6 @@ server.app = function(input, output, session) {
 			return();
 		}
 		values$fltSeqPos$End = val;
-		filter.df();
 	})
 	
 	### Tbl Filter
