@@ -646,7 +646,8 @@ server.app = function(input, output, session) {
 	observeEvent(input$btnSearchSubSeq, {
 		txt = input$inSubSeq;
 		dat = if(options$allEpi.SubSeq) values$fullData else values$dfFltData;
-		ids = find.subseq(txt, data = dat$Peptide, len = c(9, 11));
+		len = if(values$typeHLA == 1) c(9, 11) else c(11, 20); # Hardcoded
+		ids = find.subseq(txt, data = dat$Peptide, len = len);
 		if(is.null(ids) || length(ids) == 0) {
 			output$tblSummarySubSeq = NULL;
 			output$tblSubSeq  = NULL;

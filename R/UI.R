@@ -35,6 +35,7 @@ getUI = function(versionPop = 2) {
 	shiny::fluidPage(
 	shiny::navbarPage("HLA-Browser", id="menu.top",
 		# theme = init.theme(),
+		# Data Panel:
 		tabPanel("Data", # icon = icon("upload file"),
 			sidebarLayout(
 				sidebarPanel(
@@ -66,13 +67,15 @@ getUI = function(versionPop = 2) {
 				fluidRow(DT::DTOutput("tblDataStatsSeq")),
 				)
 		)),
+		### Population Coverage
+		# - see file: UI.PopCover.R;
+		getUI.PopCover(version = versionPop),
+		### Epitope Summary
+		getUI.EpiSummary(),
 		### HLA Alleles
 		tabPanel("Alleles", # icon = icon("HLA"),
 			mainPanel(DT::DTOutput("tblAlleles"))
 		),
-		### Population Coverage
-		# - see file: UI.PopCover.R;
-		getUI.PopCover(version = versionPop),
 		### Sub-Sequences
 		tabPanel("SubSeq", # icon = icon("SubSeq"),
 			fluidRow(
@@ -90,26 +93,7 @@ getUI = function(versionPop = 2) {
 			column(12, DT::DTOutput("tblSubSeq"))
 			)
 		),
-		tabPanel("EpiSummary", # icon = icon("Summary"),
-			fluidRow(
-			column(4, # Epitopes which will be summarized
-				textAreaInput("inEpiSummary", "Epitopes", value = "",
-					width = "90%", rows = 3)
-			),
-			column(6,
-				fluidRow(textOutput("txtBtnEpiSummary")),
-				fluidRow(
-				actionButton("btnEpiSummary", "Summary"),
-				actionButton("btnEpiSummaryPrint", "Print"),
-				downloadButton("downloadEpiSummary", "Download"),
-				),
-			) ),
-			fluidRow(DT::DTOutput("tblEpiSummaryUnique")),
-			fluidRow(
-			column(12, DT::DTOutput("tblEpiSummary"))
-			),
-		),
-		# Regions: Compare HLA Freq
+		# Geo Regions: Compare HLA Freq
 		tabPanel("Regions", # icon = icon("Regions"),
 			fluidRow(DT::DTOutput("tblRegionsHLA"))
 		),
@@ -156,4 +140,26 @@ inputHLAFreq = function() {
 					">= 3%" = ">= 3%", ">= 1%" = ">= 1%",
 					"Uncommon (< 1%)" = "< 1%", "Uncommon (NA)" = "Uncommon"),
 		selected = "All");
+}
+
+getUI.EpiSummary = function() {
+	tabPanel("EpiSummary", # icon = icon("Summary"),
+		fluidRow(
+			column(4, # Epitopes which will be summarized
+				textAreaInput("inEpiSummary", "Epitopes", value = "",
+					width = "90%", rows = 3)
+			),
+			column(6,
+				fluidRow(textOutput("txtBtnEpiSummary")),
+				fluidRow(
+				actionButton("btnEpiSummary", "Summary"),
+				actionButton("btnEpiSummaryPrint", "Print"),
+				downloadButton("downloadEpiSummary", "Download"),
+				),
+			) ),
+		fluidRow(DT::DTOutput("tblEpiSummaryUnique")),
+			fluidRow(
+			column(12, DT::DTOutput("tblEpiSummary"))
+			),
+		);
 }
