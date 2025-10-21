@@ -179,17 +179,50 @@ match.pK_Names = function(x) {
 #################
 
 ### Split Mutation into Tokens
+# x = "XnnnY", where X, Y = 1 letter codes for AAs;
 # - Covers Insertions & Deletions;
-split.Mutation = function(x) {
+#' @export
+split.Mutation = function(x, as.upper = TRUE) {
 	len = nchar(x);
 	if(len < 2) return(NULL);
-	aa1  = substr(x, 1, 1);
+	tk = regexec("^([A-Za-z])(\\d++)([A-Za-z]*+$)", x, perl = TRUE);
+	tk = tk[[1]];
+	if(tk[1] == -1) return(NULL);
+	nS = tk[-1];
+	nE = attr(tk, "match.length")[-1];
+	hasAA2 = nE[3] > 0;
+	nE = nE + nS - 1;
+	nPos = substr(x, nS[2], nE[2]);
+	nPos = as.integer(nPos);
+	aa1  = substr(x, nS[1], nE[1]);
+	aa2  = if(hasAA2) substr(x, nS[3], nE[3]) else "";
+	if(as.upper) {
+		aa1 = toupper(aa1);
+		aa2 = toupper(aa2);
+	}
+	lst = list(nPos = nPos, Aa1 = aa1, Aa2 = aa2);
+	return(lst);
+}
+# [old]
+split.Mutation.old = function(x, as.upper = TRUE) {
+	len = nchar(x);
+	if(len < 2) return(NULL);
+	aa1 = substr(x, 1, 1);
+	ch1 = as.integer(charToRaw(aa1));
+	if(ch1 < 65 || ch1 > 122) {
+		return(NULL); # A, z;
+	}
+	if(ch1 > 90 && ch1 < 97) {
+		return(NULL); # 'Z' < aa1 < 'a';
+	}
+	if(as.upper) aa1 = toupper(aa1);
 	sT2  = substr(x, 2, len);
 	sT2  = strsplit(sT2, "(?<=\\d)(?!\\d)", perl=TRUE);
 	sT2  = sT2[[1]];
 	nPos = sT2[1];
 	nPos = as.integer(nPos);
 	aa2  = if(length(sT2) == 1) "" else sT2[2];
+	if(as.upper) aa2 = toupper(aa2);
 	lst  = list(nPos = nPos, Aa1 = aa1, Aa2 = aa2);
 	return(lst);
 }

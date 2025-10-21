@@ -3,6 +3,7 @@
 S3method(absoluteCharge,default)
 S3method(absoluteCharge,tblAA)
 S3method(merge,hla)
+S3method(split,Mutation)
 export(aa.pK)
 export(absoluteCharge)
 export(as.seqAA)
