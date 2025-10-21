@@ -93,14 +93,17 @@ getUI = function(versionPop = 2) {
 			column(12, DT::DTOutput("tblSubSeq"))
 			)
 		),
-		# Geo Regions: Compare HLA Freq
+		### Geo Regions: Compare HLA Freq
 		tabPanel("Regions", # icon = icon("Regions"),
 			fluidRow(DT::DTOutput("tblRegionsHLA"))
 		),
-		# View Epitopes on Protein
+		### View Epitopes on Protein
 		tabPanel("Protein", # icon = icon("Protein"),
 			plotOutput("imgProtein")
 		),
+		### Mutate Protein
+		getUI.MutateProtein(),
+		### Help Page
 		tabPanel("Help", # icon = icon("Help"),
 			uiOutput("txtHelp")
 		)
@@ -162,4 +165,20 @@ getUI.EpiSummary = function() {
 			column(12, DT::DTOutput("tblEpiSummary"))
 			),
 		);
+}
+
+getUI.MutateProtein = function() {
+	tabPanel("Mutate", # icon = icon("Mutate"),
+	sidebarLayout(
+		sidebarPanel(
+			textInput("inMutation", "Mutation", value = ""),
+			actionButton("btnMutate", "Mutate"),
+		),
+		mainPanel(
+			fluidRow(
+				textAreaInput("inMSeq", "Sequence", value = "",
+					width = "90%", rows = 10)
+			),
+		)
+	))
 }

@@ -805,6 +805,43 @@ server.app = function(input, output, session) {
 		axis(side = 2, at = 2*seq_along(idSeq) - 0.5, labels = idSeq, las = 2);
 	})
 	
+	### Mutate Protein
+	
+	observeEvent(input$btnMutate, {
+		LEN_LINE = 60;
+		sMut = input$inMutation;
+		sMut = split.Mutation(sMut);
+		if(is.null(sMut)) {
+			cat("NO Mutation!\n");
+			return();
+		}
+		nPos = sMut$nPos;
+		# Seq:
+		sPr = input$inMSeq;
+		sPr = gsub("\\s+", "", sPr);
+		if(nchar(sPr) < nPos) {
+			cat("Invalid position of Mutation!\n");
+			return();
+		}
+		if(substr(sPr, nPos, nPos) != sMut$Aa1) {
+			cat("Warning: wrong aa at position = ", nPos, "\n", sep = "");
+			return();
+		}
+		# substr(sPr, nPos, nPos) = sMut$Aa2;
+		LEN = nchar(sPr);
+		sT1 = if(nPos == 1) "" else substr(sPr, 1, nPos - 1);
+		sT2 = if(nPos == LEN) "" else substr(sPr, nPos + 1, LEN);
+		sPr = paste0(sT1, sMut$Aa2, sT2);
+		LEN = nchar(sPr);
+		nTok = (LEN - 1) %/% LEN_LINE + 1;
+		sPr = sapply(seq(nTok), function(id) {
+			nS = (id-1) * LEN_LINE;
+			substr(sPr, nS+1, nS + LEN_LINE);
+		});
+		sPr = paste0(sPr, "\n", collapse = "");
+		updateTextAreaInput(session, "inMSeq", value = sPr);
+	})
+	
 	### Help
 	output$txtHelp <- renderUI({
 		getHelp();

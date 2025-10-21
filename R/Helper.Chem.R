@@ -176,3 +176,20 @@ match.pK_Names = function(x) {
 	nms[id];
 }
 
+#################
+
+### Split Mutation into Tokens
+# - Covers Insertions & Deletions;
+split.Mutation = function(x) {
+	len = nchar(x);
+	if(len < 2) return(NULL);
+	aa1  = substr(x, 1, 1);
+	sT2  = substr(x, 2, len);
+	sT2  = strsplit(sT2, "(?<=\\d)(?!\\d)", perl=TRUE);
+	sT2  = sT2[[1]];
+	nPos = sT2[1];
+	nPos = as.integer(nPos);
+	aa2  = if(length(sT2) == 1) "" else sT2[2];
+	lst  = list(nPos = nPos, Aa1 = aa1, Aa2 = aa2);
+	return(lst);
+}
