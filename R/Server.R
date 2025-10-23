@@ -771,6 +771,8 @@ server.app = function(input, output, session) {
 	### Protein Graph
 	
 	output$imgProtein <- renderPlot({
+		x = values$dfFltData;
+		if(is.null(x)) return();
 		isMultiSeq = values$multiSeq;
 		if(isMultiSeq) {
 			idSeq = unique(values$dfFltData$Seq);
@@ -816,15 +818,27 @@ server.app = function(input, output, session) {
 			return();
 		}
 		nPos = sMut$nPos;
-		# Seq:
+		# Input Sequence:
 		sPr = input$inMSeq;
+		# TODO: Check Multiple Sequences
+		sFasta = ""; # Fasta Name
+		rFasta = regexec("(?<=^|[\r\n])>[^\r\n]++", sPr, perl = TRUE);
+		rFasta = rFasta[[1]];
+		if(rFasta[1] >= 0) {
+			posE = attr(rFasta, "match.length");
+			posE = rFasta[1] + posE[1] - 1;
+			sFasta = substr(sPr, rFasta[1], posE);
+			sPr = substr(sPr, posE + 1, nchar(sPr));
+		}
+		# Protein Sequence:
 		sPr = gsub("\\s+", "", sPr);
 		if(nchar(sPr) < nPos) {
 			cat("Invalid position of Mutation!\n");
 			return();
 		}
-		if(substr(sPr, nPos, nPos) != sMut$Aa1) {
-			cat("Warning: wrong aa at position = ", nPos, "\n", sep = "");
+		aa0 = substr(sPr, nPos, nPos);
+		if(aa0 != sMut$Aa1) {
+			cat("Warning: wrong aa at position = ", nPos, ". Found: ", aa0, "\n", sep = "");
 			return();
 		}
 		# substr(sPr, nPos, nPos) = sMut$Aa2;
@@ -839,6 +853,7 @@ server.app = function(input, output, session) {
 			substr(sPr, nS+1, nS + LEN_LINE);
 		});
 		sPr = paste0(sPr, "\n", collapse = "");
+		sPr = paste(sFasta, sPr, sep = "\n");
 		updateTextAreaInput(session, "inMSeq", value = sPr);
 	})
 	
