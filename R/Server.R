@@ -853,7 +853,8 @@ server.app = function(input, output, session) {
 			substr(sPr, nS+1, nS + LEN_LINE);
 		});
 		sPr = paste0(sPr, "\n", collapse = "");
-		sPr = paste(sFasta, sPr, sep = "\n");
+		if(nchar(sFasta) > 0)
+			sPr = paste(sFasta, sPr, sep = "\n");
 		updateTextAreaInput(session, "inMSeq", value = sPr);
 	})
 	
