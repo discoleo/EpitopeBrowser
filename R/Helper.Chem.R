@@ -180,13 +180,15 @@ match.pK_Names = function(x) {
 
 ### Split Mutation into Tokens
 # x = "XnnnY", where X, Y = 1 letter codes for AAs;
-# - Y can have special value "_" (e.g. to mark position);
+# - X, Y can have special values: "_" or "\n" (e.g. to mark position);
 # - Covers Insertions & Deletions;
 #' @export
 split.Mutation = function(x, as.upper = TRUE) {
 	len = nchar(x);
 	if(len < 2) return(NULL);
-	tk = regexec("^([A-Za-z])(\\d++)([A-Za-z_]*+$)", x, perl = TRUE);
+	# Enable NL:
+	x  = gsub("\\\\n", "\n", x);
+	tk = regexec("^([A-Za-z_\n])(\\d++)([A-Za-z_\n]*+$)", x, perl = TRUE);
 	tk = tk[[1]];
 	if(tk[1] == -1) return(NULL);
 	nS = tk[-1];
