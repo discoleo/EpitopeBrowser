@@ -318,22 +318,48 @@ freq.loc2any.old = function(p1, p2) {
 
 ### HLA Regions
 
-merge.RegionsHLA = function(x = 'De') {
+
+#' @export
+merge.HLARegions3 = function(
+		x = list(Hu = "Hungary"),
+		y = list(De = "De", It = "Italy"), ...) {
+	x   = c(y, x);
+	hla = merge.HLARegions(x, y = NULL, ...);
+	return(hla);
+}
+#' @export
+merge.HLARegions = function(
+		x = list(De = "De", It = "Italy", Hu = "Hungary"),
+		y = NULL, ...) {
+	regions = x;
 	nms = c("HLA", "Freq");
-	sfx = paste0("Freq.", c(x, "It", "Hu"));
-	x = hla(x);
-	y = hla("Italy")[, nms];
+	sfx = paste0("Freq.", names(regions));
+	x = hla(regions[[1]]);
+	y = hla(regions[[2]])[, nms];
 	names(x)[3] = sfx[1];
 	names(y)[2] = sfx[2];
 	x = merge(x, y, by = "HLA", all = TRUE);
-	# Level 1:
-	x$HLA.L1 = sub("\\:[0-9]++$", "", x$HLA, perl = TRUE);
-	y = hla("Hungary")[, nms];
+	# Region 3:
+	y = hla(regions[[3]])[, nms];
 	y = y[! is.na(y$HLA), ];
-	# Exclude Level 2:
-	y = y[! grepl("\\:[0-9]++$", y$HLA, perl = TRUE), ];
+	# Exclude Level 3:
+	isL3 = grepl("\\:[0-9]++\\:[0-9]++$", y$HLA, perl = TRUE);
+	isL2 = grepl("\\:[0-9]++$", y$HLA, perl = TRUE);
+	isL1 = TRUE;
+	if(any(isL3) || all(isL2)) {
+		isL1 = FALSE;
+		x$HLA.L1 = x$HLA; # hack: use L2;
+		y$HLA[isL3] = sub("\\:[0-9]++$", "", y$HLA[isL3], perl = TRUE);
+	} else {
+		# Level 1:
+		x$HLA.L1 = sub("\\:[0-9]++$", "", x$HLA, perl = TRUE);
+		# Exclude Level 2:
+		# - inferred L2 frequencies;
+		y = y[! grepl("\\:[0-9]++$", y$HLA, perl = TRUE), ];
+	}
 	names(y) = c("HLA.L1", sfx[3]);
 	x = merge(x, y, by = "HLA.L1", all = TRUE);
+	# if(! isL1) x$HLA.L1 = sub("\\:[0-9]++$", "", x$HLA.L1, perl = TRUE);
 	print(str(x))
 	return(x);
 }

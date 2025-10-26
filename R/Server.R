@@ -22,7 +22,11 @@ server.app = function(input, output, session) {
 		# Protein Graph:
 		col.Pr    = "#FF0032A0",
 		border.Pr = "#640000A0",
-		lwd.Pr   = 1.5 # NOT used with Polygon
+		lwd.Pr    = 1.5, # NOT used with Polygon
+		# Countries / Regions:
+		HLA.Region = list(Hu = "Hungary"),
+		# HLA.Region = list(Ro = "Ro-Fundeni"),
+		NULLARG = NULL
 	);
 	
 	const = list(
@@ -73,6 +77,8 @@ server.app = function(input, output, session) {
 		# Stats:
 		dfEpiStats = NULL,      # Stats: Epitopes
 		pI.Type = "Bjellqvist", # Algorithm/pKa for pI;
+		# Countries / Regions:
+		HLA.Region = options$HLA.Region,
 		NULLARG = NULL
 	);
 	
@@ -762,10 +768,15 @@ server.app = function(input, output, session) {
 	### HLA Regions
 	
 	output$tblRegionsHLA = renderDT({
-		tbl = merge.RegionsHLA();
+		tbl = merge.HLARegions3(x = values$HLA.Region);
+		nms = if(is.null(values$HLA.Region)) {
+			"Hu"
+		} else names(values$HLA.Region);
+		nms = c("De", "It", nms);
+		nms = paste0("Freq.", nms);
 		DT::datatable(tbl, filter = 'top',
 			options = option.regex(options$reg.PP)) |>
-		formatRound(c('Freq.De','Freq.It','Freq.Hu'), 4);
+		formatRound(nms, 4);
 	})
 	
 	### Protein Graph

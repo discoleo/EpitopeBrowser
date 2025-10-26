@@ -2,6 +2,8 @@
 
 S3method(absoluteCharge,default)
 S3method(absoluteCharge,tblAA)
+S3method(merge,HLARegions)
+S3method(merge,HLARegions3)
 S3method(merge,hla)
 S3method(split,Mutation)
 export(aa.pK)
