@@ -158,6 +158,7 @@ getUI.EpiSummary = function() {
 				actionButton("btnEpiSummary", "Summary"),
 				actionButton("btnEpiSummaryPrint", "Print"),
 				downloadButton("downloadEpiSummary", "Download"),
+				downloadButton("downloadEpiSummaryAlleles", "Alleles"),
 				),
 			) ),
 		fluidRow(DT::DTOutput("tblEpiSummaryUnique")),

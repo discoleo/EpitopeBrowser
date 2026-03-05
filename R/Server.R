@@ -66,6 +66,7 @@ server.app = function(input, output, session) {
 		dfPopCoverPP = NULL,
 		dfPopAlleles = NULL, # Alleles Covered by selected Set
 		dfTotalPopulation = NULL, # HLA & Epitope
+		dfHLAEpiSummary   = NULL, # Imported Epitopes: Full HLA Alleles
 		fltHLAEpiSel      = NULL, # Only HLA covered by Selection
 		dfRemainingEpi    = NULL,
 		optRemainingEpi   = list(), # Options/Filters for the table
@@ -695,9 +696,11 @@ server.app = function(input, output, session) {
 		if(nrow(dat) == 0) {
 			output$tblEpiSummary  = NULL;
 			values$warnEpiSummary = TRUE;
+			values$dfHLAEpiSummary = NULL;
 			return();
 		}
-		values$warnEpiSummary = FALSE;
+		values$dfHLAEpiSummary = dat;
+		values$warnEpiSummary  = FALSE;
 		# Save as Epitope Selection
 		pp = dat$Peptide;
 		selectEpiPopCover(pp);
@@ -760,6 +763,17 @@ server.app = function(input, output, session) {
 		},
 		content = function(file) {
 			x = values$dfEpiStats;
+			if(is.null(x)) return(NULL);
+			write.csv(x, file, row.names = FALSE);
+		}
+	)
+	# HLA Alleles: Full Table
+	output$downloadEpiSummaryAlleles = downloadHandler(
+		filename = function() {
+			paste("EpiSummary_Alleles", ".csv", sep = "");
+		},
+		content = function(file) {
+			x = values$dfHLAEpiSummary;
 			if(is.null(x)) return(NULL);
 			write.csv(x, file, row.names = FALSE);
 		}
