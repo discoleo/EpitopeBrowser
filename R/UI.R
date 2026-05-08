@@ -160,6 +160,10 @@ getUI.EpiSummary = function() {
 				downloadButton("downloadEpiSummary", "Download"),
 				downloadButton("downloadEpiSummaryAlleles", "Alleles"),
 				),
+				fluidRow(
+					checkboxInput("chkHLACollapse_EpiSumm",
+						"Collapse HLA (for IEDB):", value = FALSE),
+				),
 			) ),
 		fluidRow(DT::DTOutput("tblEpiSummaryUnique")),
 			fluidRow(

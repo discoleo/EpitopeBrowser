@@ -9,6 +9,7 @@ server.app = function(input, output, session) {
 	options = list(
 		fltRank   = 0.55, # Default value for Rank-Filter;
 		hla.strip = TRUE, # HLA-A... => A...;
+		hla.exp.alleles = FALSE, # Export as HLA-...
 		sep = ",",        # csv Separator
 		hla.region  = "De",
 		HLA.trim.2A = TRUE, # Trim: D[PQR]A*...;
@@ -72,6 +73,8 @@ server.app = function(input, output, session) {
 		optRemainingEpi   = list(), # Options/Filters for the table
 		pageTblPP     = NULL,     # Page in main PopCoverage Table
 		pgSelPopCover = NULL,     # Pages with Selected Epitopes
+		# Epi-Summary:
+		hla.exp.collapse  = FALSE,  # Collapse HLA (for IEDB: Population Cover)
 		# Sub-Sequences:
 		warnSubSeq = FALSE,
 		warnEpiSummary = FALSE,
@@ -694,8 +697,8 @@ server.app = function(input, output, session) {
 		isRow = dat$Peptide %in% txt;
 		dat   = dat[isRow, ];
 		if(nrow(dat) == 0) {
-			output$tblEpiSummary  = NULL;
-			values$warnEpiSummary = TRUE;
+			output$tblEpiSummary   = NULL;
+			values$warnEpiSummary  = TRUE;
 			values$dfHLAEpiSummary = NULL;
 			return();
 		}
@@ -756,6 +759,23 @@ server.app = function(input, output, session) {
 		));
 	})
 	
+	### Options:
+	
+	### Option: Collapse HLA in Exported file;
+	observeEvent(input$chkHLACollapse_EpiSumm, {
+		values$hla.exp.collapse = input$chkHLACollapse_EpiSumm;
+	})
+	
+	collapse.hla = function(x, hla.add, sep = ", ") {
+		if(hla.add) {
+			x$HLA = paste0("HLA-", x$HLA);
+		}
+		x = tapply(x$HLA, x$Peptide, paste0, collapse = sep);
+		x = cbind(names(x), x);
+		rownames(x) = NULL;
+		return(x);
+	}
+	
 	### Save Data
 	output$downloadEpiSummary = downloadHandler(
 		filename = function() {
@@ -770,12 +790,24 @@ server.app = function(input, output, session) {
 	# HLA Alleles: Full Table
 	output$downloadEpiSummaryAlleles = downloadHandler(
 		filename = function() {
-			paste("EpiSummary_Alleles", ".csv", sep = "");
+			file.ext = if(values$hla.exp.collapse) ".txt" else ".csv";
+			paste("EpiSummary_Alleles", file.ext, sep = "");
 		},
 		content = function(file) {
 			x = values$dfHLAEpiSummary;
 			if(is.null(x)) return(NULL);
-			write.csv(x, file, row.names = FALSE);
+			if(values$hla.exp.collapse) {
+				# Export in IEDB format:
+				x = collapse.hla(x, options$hla.strip);
+				write.table(x, file, sep = "\t", quote = FALSE,
+					row.names = FALSE, col.names = FALSE);
+			} else {
+				# Plain csv:
+				if(options$hla.exp.alleles && options$hla.strip) {
+					x$HLA = paste0("HLA-", x$HLA);
+				}
+				write.csv(x, file, row.names = FALSE);
+			}
 		}
 	)
 	
