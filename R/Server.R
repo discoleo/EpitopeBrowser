@@ -7,18 +7,20 @@ getServer = function(x) {
 server.app = function(input, output, session) {
 	# Global Options
 	options = list(
-		fltRank   = 0.55, # Default value for Rank-Filter;
+		fltRank   = c(0.55, 2), # Default values for Rank-Filter (HLA-1 & HLA-2);
 		hla.strip = TRUE, # HLA-A... => A...;
 		hla.exp.alleles = FALSE, # Export as HLA-...
 		sep = ",",        # csv Separator
 		hla.region  = "De",
-		HLA.trim.2A = TRUE, # Trim: D[PQR]A*...;
+		HLA.trim.2A = FALSE, # Trim: D[PQR]A*...;
 		# Regex & Other Options:
 		reg.Data  = TRUE,  # Regex for Data-Table
 		reg.PP    = TRUE,  # Regex for Epitopes-Table
 		highlight = TRUE,  # Highlight Search Term
+		# Epi-Summary
+		epiSummary.quant  = c(0, 0.5, 1), # Quantiles used for Summary
 		# Sub-Seq:
-		allEpi.SubSeq = TRUE,
+		allEpi.SubSeq     = TRUE,
 		allEpi.EpiSummary = FALSE,
 		# Protein Graph:
 		col.Pr    = "#FF0032A0",
@@ -43,8 +45,13 @@ server.app = function(input, output, session) {
 		NULL
 	);
 	
+	setFltRank = function(x) {
+		updateNumericInput(session, "fltRank", value = x);
+	}
+	
 	### Init:
-	updateNumericInput(session, "fltRank", value = options$fltRank);
+	# updateNumericInput(session, "fltRank", value = options$fltRank);
+	setFltRank(options$fltRank[1]);
 	updateSelectInput(session, "fltAlleleRegion", selected = options$hla.region);
 	
 	# Dynamic variable
@@ -183,10 +190,15 @@ server.app = function(input, output, session) {
 		# Multiple Protein Sequences:
 		values$multiSeq = if("Seq" %in% names(x)) TRUE else FALSE;
 		# HLA Class 2:
-		if(any(grepl("(?i)^D", x$HLA))) {
-			values$typeHLA = 2;
-		} else values$typeHLA = 1;
-		# NO population data
+		oldHLA = values$typeHLA;
+		newHLA = classHLA(x, options$hla.strip);
+		values$typeHLA = newHLA;
+		if(newHLA == 1 && oldHLA != 1) {
+			setFltRank(options$fltRank[[1]]);
+		} else if(newHLA == 2 && oldHLA != 2) {
+			setFltRank(options$fltRank[[2]]);
+		}
+		# NO population data for DPA & DQA
 		if(options$HLA.trim.2A) {
 			x$HLA = trim.hla2A(x$HLA);
 		}
@@ -352,6 +364,7 @@ server.app = function(input, output, session) {
 		output$txtBtnDisplay = renderText(const$DisplayHLA$More);
 		setPopCoverSelected(pp);
 	})
+	# Get/Set Epitope-Selection:
 	getPopCoverSelected = function(verbose = TRUE) {
 		ids = input$tblPeptides_rows_selected;
 		if(verbose) print(ids); # DEBUG
@@ -396,6 +409,7 @@ server.app = function(input, output, session) {
 		values$fltHLAEpiSel = NULL;
 		values$dfTotalPopulation = NULL;
 	}
+	# Events:
 	observeEvent(input$btnCovClear, {
 		clearPopCover();
 		# De-Select ALL Rows:
@@ -691,10 +705,11 @@ server.app = function(input, output, session) {
 		if(is.null(values$fullData)) return();
 		txt = input$inEpiSummary;
 		txt = strsplit(txt, "[, \n\t]+");
-		txt = sort(txt[[1]]);
+		txt = unique(txt[[1]]);
+		sEp = sort(txt);
 		# Process the entire Data set:
 		dat = if(options$allEpi.EpiSummary) values$fullData else values$dfFltData;
-		isRow = dat$Peptide %in% txt;
+		isRow = dat$Peptide %in% sEp;
 		dat   = dat[isRow, ];
 		if(nrow(dat) == 0) {
 			output$tblEpiSummary   = NULL;
@@ -706,16 +721,26 @@ server.app = function(input, output, session) {
 		values$warnEpiSummary  = FALSE;
 		# Save as Epitope Selection
 		pp = dat$Peptide;
+		# Tbl: Population Cover
 		selectEpiPopCover(pp);
 		# values$dfPopAlleles = pp;
 		# Summary:
 		typeHLA  = values$typeHLA;
 		datStats = freq.hlaMerge(dat, values$dfHLA,
-			multiSeq = values$multiSeq, type = typeHLA, probs = c(0, 0.5, 1));
+			multiSeq = values$multiSeq, type = typeHLA,
+			probs    = options$epiSummary.quant);
 		nmsQ = c(names.quant(datStats), names.hlaFreq(typeHLA));
 		if(! is.null(values$pI.Type)) {
 			datStats$pI = pI(datStats$Peptide, type = values$pI.Type);
 			nmsQ = c(nmsQ, "pI");
+		}
+		# Original Order:
+		idE = order(match(datStats$Peptide, txt));
+		datStats = datStats[idE,];
+		# MHC-2 Core:
+		if(typeHLA == 2) {
+			# Core Start:
+			# datStats$Cs = 0; # TODO
 		}
 		attr(datStats, "nmsNum") = nmsQ;
 		values$dfEpiStats = datStats;
@@ -765,16 +790,6 @@ server.app = function(input, output, session) {
 	observeEvent(input$chkHLACollapse_EpiSumm, {
 		values$hla.exp.collapse = input$chkHLACollapse_EpiSumm;
 	})
-	
-	collapse.hla = function(x, hla.add, sep = ", ") {
-		if(hla.add) {
-			x$HLA = paste0("HLA-", x$HLA);
-		}
-		x = tapply(x$HLA, x$Peptide, paste0, collapse = sep);
-		x = cbind(names(x), x);
-		rownames(x) = NULL;
-		return(x);
-	}
 	
 	### Save Data
 	output$downloadEpiSummary = downloadHandler(

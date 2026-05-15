@@ -12,6 +12,17 @@ splitRange = function(x) {
 	return(val);
 }
 
+# Used for MHC-2: Core
+#' @export
+findPos = function(what, x, fixed = TRUE) {
+	npos = sapply(seq_along(what), function(id) {
+		npos = regexpr(what[id], x[id], fixed = fixed);
+		attributes(npos) = NULL;
+		return(npos);
+	})
+	return(npos);
+}
+
 table.length = function(x, hasMultiSeq, unique = TRUE) {
 	colSeq = if(hasMultiSeq) "Seq" else NULL;
 	x = x[, c("Peptide", colSeq, "start", "Len")];
@@ -27,6 +38,16 @@ table.length = function(x, hasMultiSeq, unique = TRUE) {
 	return(tbl);
 }
 
+# MHC-2 vs MHC-1:
+isMHC2 = function(x) {
+	idMHC2 = which(grepl("netmhciipan_el.score", names(x)));
+	isMHC2 = length(idMHC2) > 0;
+	return(isMHC2);
+}
+getCore = function(x) {
+	x$netmhciipan_el.core;
+}
+
 ### Read Epitopes
 # sep = separator used in the csv file;
 read.epi = function(file, hla.strip = TRUE, sep = ",") {
@@ -34,10 +55,11 @@ read.epi = function(file, hla.strip = TRUE, sep = ",") {
 	if(is.numeric(x[,1])) {
 		# IEDB: new format / unedited;
 		hasMultiSeq = length(unique(x[,1])) > 1;
-		# MHC-2 vs MGC-1:
+		# MHC-2 vs MHC-1:
 		idMHC2 = which(grepl("netmhciipan_el.score", names(x)));
 		isMHC2 = length(idMHC2) > 0;
 		#
+		if(isMHC2) corePP = getCore(x);
 		id = if(isMHC2) idMHC2 else 11;
 		id = if(hasMultiSeq) c(6,2,3,4,5, 1, 7,id,8) else c(6,2,3,4,5,7,id,8);
 		x  = x[, id];
@@ -49,6 +71,8 @@ read.epi = function(file, hla.strip = TRUE, sep = ",") {
 			nms = c("HLA", "Peptide", "Len", "ID", "Score","Rank");
 		}
 		names(x)[idNms] = nms;
+		# MHC-2 Core:
+		if(isMHC2) x$Cs = findPos(corePP, x$Peptide);
 	} else if(is.numeric(x[,2])) {
 		# Old / Modified csv-Files;
 		names(x)[c(1,2,6,8)] = c("HLA", "Seq", "Peptide", "Rank");
@@ -69,6 +93,35 @@ trim.hla = function(x) {
 
 trim.hla2A = function(x) {
 	sub("(?i)^D[PQR]A[1-5][0-9*\\:]++/", "", x, perl = TRUE);
+}
+
+
+classHLA = function(x, stripHLA = TRUE) {
+	if(stripHLA) {
+		hla2 = "(?i)^D";
+	} else {
+		hla2 = "(?i)^HLA-D";
+	}
+	isHLA2 = grepl(hla2, x$HLA);
+	if(all(isHLA2)) {
+		return(2);
+	} else if(any(isHLA2)) {
+		return(0); # TODO
+	}
+	return(1);
+}
+
+
+### Collapse Alleles
+#' @export
+collapse.hla = function(x, hla.add, sep = ", ") {
+	if(hla.add) {
+		x$HLA = paste0("HLA-", x$HLA);
+	}
+	x = tapply(x$HLA, x$Peptide, paste0, collapse = sep);
+	x = cbind(names(x), x);
+	rownames(x) = NULL;
+	return(x);
 }
 
 ### Std Names
@@ -215,7 +268,12 @@ freq.all = function(x, hla, seqPP = NULL, type = 1, digits = 6) {
 		}
 	}
 	# Population Coverage:
-	yDR3 = 0;
+	y = popCover(y, type=type, digits=digits);
+	return(y);
+}
+
+popCover = function(x, type, digits = NULL) {
+	y = x; yDR3 = 0;
 	if(type == 1) {
 		yA = y$A; yB = y$B; yC = y$C;
 	} else {
@@ -226,8 +284,10 @@ freq.all = function(x, hla, seqPP = NULL, type = 1, digits = 6) {
 	y$Tn = yAB + yC + yDR3; # Total sum (naive total);
 	# y$Ti = y$Tn - yAB*yC + yA*yB*(yC - 1); # [old]
 	y$Ti = 1 - (1-yA)*(1-yB)*(1-yC)*(1-yDR3);
-	y$Ti = round(y$Ti, digits);
-	y$Tn = round(y$Tn, digits);
+	if(! is.null(digits)) {
+		y$Ti = round(y$Ti, digits);
+		y$Tn = round(y$Tn, digits);
+	}
 	return(y);
 }
 
